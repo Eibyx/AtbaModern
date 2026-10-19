@@ -21,7 +21,7 @@ _IntegrationJobData _$IntegrationJobDataFromJson(Map<String, dynamic> json) =>
       detail: json['detail'] as String,
       downloadUrl: json['download_url'] as String?,
       status: json['status'] as String,
-      fileName: json['file_name'] as String,
+      fileName: json['file_name'] as String? ?? '',
       taskId: json['task_id'] as String?,
       jobId: json['job_id'] as String?,
     );

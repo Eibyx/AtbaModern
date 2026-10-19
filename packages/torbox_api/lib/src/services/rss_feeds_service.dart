@@ -76,7 +76,7 @@ class RssFeedsService {
         'rss_type': rssType,
         'torrent_seeding': torrentSeeding,
         'pass_check': passCheck,
-      },
+      }..removeWhere((key, value) => value == null),
     );
     return nullResponseFromJson(response);
   }

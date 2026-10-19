@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart' show parseHttpDate;
 
 /// Dio interceptor that retries failed requests with exponential backoff.
 ///
@@ -70,8 +71,9 @@ class RetryInterceptor extends Interceptor {
 
   bool _shouldRetry(DioException err) {
     // Mutations may have succeeded before a timeout: never duplicate them.
-    if (!{'GET', 'HEAD', 'OPTIONS'}.contains(err.requestOptions.method))
+    if (!{'GET', 'HEAD', 'OPTIONS'}.contains(err.requestOptions.method)) {
       return false;
+    }
     final statusCode = err.response?.statusCode;
     if (statusCode == null) {
       // Network error, timeout, etc. — retry.
@@ -86,10 +88,22 @@ class RetryInterceptor extends Interceptor {
   Duration _computeDelay(int attempt, DioException err) {
     final jitter = 0.5 + _random.nextDouble(); // 0.5 – 1.5
     var delayMs = baseDelayMs * (1 << attempt) * jitter;
-    // Honor the server's back-off request when present (seconds).
-    final retryAfterSecs = int.tryParse(
-      err.response?.headers.value('retry-after') ?? '',
-    );
+    // Retry-After supports both a delay in seconds and an HTTP date.
+    final header = err.response?.headers.value('retry-after') ?? '';
+    int? retryAfterSecs = int.tryParse(header);
+    if (retryAfterSecs == null && header.isNotEmpty) {
+      try {
+        retryAfterSecs =
+            (parseHttpDate(
+                      header,
+                    ).difference(DateTime.now().toUtc()).inMilliseconds /
+                    1000)
+                .ceil();
+      } on FormatException {
+        retryAfterSecs =
+            null; // Retain exponential backoff for invalid headers.
+      }
+    }
     if (retryAfterSecs != null) {
       delayMs = max(delayMs, retryAfterSecs * 1000.0);
     }

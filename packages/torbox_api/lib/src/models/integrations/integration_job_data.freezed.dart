@@ -227,7 +227,7 @@ return $default(_that.id,_that.createdAt,_that.updatedAt,_that.authId,_that.hash
 @JsonSerializable()
 
 class _IntegrationJobData implements IntegrationJobData {
-  const _IntegrationJobData({required this.id, required this.createdAt, required this.updatedAt, required this.authId, required this.hash, required this.type, required this.integration, this.fileId, required this.zip, required this.progress, required this.detail, this.downloadUrl, required this.status, required this.fileName, @JsonKey(name: 'task_id') this.taskId, @JsonKey(name: 'job_id') this.jobId});
+  const _IntegrationJobData({required this.id, required this.createdAt, required this.updatedAt, required this.authId, required this.hash, required this.type, required this.integration, this.fileId, required this.zip, required this.progress, required this.detail, this.downloadUrl, required this.status, this.fileName = '', @JsonKey(name: 'task_id') this.taskId, @JsonKey(name: 'job_id') this.jobId});
   factory _IntegrationJobData.fromJson(Map<String, dynamic> json) => _$IntegrationJobDataFromJson(json);
 
 @override final  int id;
@@ -244,7 +244,7 @@ class _IntegrationJobData implements IntegrationJobData {
 /// Populated once the transfer completes.
 @override final  String? downloadUrl;
 @override final  String status;
-@override final  String fileName;
+@override@JsonKey() final  String fileName;
 /// Returned by the list endpoints.
 @override@JsonKey(name: 'task_id') final  String? taskId;
 /// Returned by the single-job endpoint.

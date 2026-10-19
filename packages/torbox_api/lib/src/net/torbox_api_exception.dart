@@ -35,11 +35,9 @@ class TorboxApiException implements Exception {
 
   @override
   String toString() {
-    final buffer = StringBuffer('TorboxApiException: $message');
-    if (uri != null) buffer.write(' [$uri]');
-    if (isHttpError) buffer.write(' (status $statusCode)');
-    if (errorCode != null) buffer.write(' [errorCode: $errorCode]');
-    if (detail != null) buffer.write('\n  detail: $detail');
-    return buffer.toString();
+    // Query strings may contain OAuth tokens or signed download credentials.
+    // Do not include arbitrary server messages or request values in logs.
+    final path = uri?.path ?? '';
+    return 'TorboxApiException(status: $statusCode, path: $path)';
   }
 }

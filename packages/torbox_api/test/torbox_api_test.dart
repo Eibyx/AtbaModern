@@ -55,9 +55,7 @@ Set<String> _formKeys(RequestOptions options) {
 
 /// The form fields of a multipart request, as a name to value map.
 Map<String, String> _formValues(RequestOptions options) =>
-    Map<String, String>.fromEntries(
-      (options.data as FormData).fields,
-    );
+    Map<String, String>.fromEntries((options.data as FormData).fields);
 
 void main() {
   group('TorBoxResponse envelope', () {
@@ -280,9 +278,7 @@ void main() {
       RequestOptions? sent;
       final client = _capturingClient(
         (options) => sent = options,
-        respond: () => _okEnvelope(
-          '{"hash":"h","torrent_id":1,"auth_id":"a"}',
-        ),
+        respond: () => _okEnvelope('{"hash":"h","torrent_id":1,"auth_id":"a"}'),
       );
 
       await TorrentsService(client).createTorrent(
@@ -951,18 +947,21 @@ void main() {
       await service.createTorrent(file: torrentFile);
     });
 
-    test('create usenet download requires exactly one of link or file', () async {
-      final service = UsenetService(_capturingClient((_) {}));
-      expect(
-        () => service.createUsenetDownload(),
-        throwsA(isA<TorboxRequestValidationException>()),
-      );
-      expect(
-        () => service.createUsenetDownload(link: 'l', file: nzbFile),
-        throwsA(isA<TorboxRequestValidationException>()),
-      );
-      await service.createUsenetDownload(link: 'l');
-    });
+    test(
+      'create usenet download requires exactly one of link or file',
+      () async {
+        final service = UsenetService(_capturingClient((_) {}));
+        expect(
+          () => service.createUsenetDownload(),
+          throwsA(isA<TorboxRequestValidationException>()),
+        );
+        expect(
+          () => service.createUsenetDownload(link: 'l', file: nzbFile),
+          throwsA(isA<TorboxRequestValidationException>()),
+        );
+        await service.createUsenetDownload(link: 'l');
+      },
+    );
 
     test('control requests require a target', () async {
       final torrents = TorrentsService(_capturingClient((_) {}));
@@ -1177,9 +1176,9 @@ void main() {
       );
 
       final res = await api.torrents.controlTorrent(
-          operation: 'delete',
-          torrentId: 1,
-        );
+        operation: 'delete',
+        torrentId: 1,
+      );
 
       expect(res.success, isTrue);
       expect(res.detail, 'from interceptor');
@@ -1198,20 +1197,14 @@ void main() {
       );
       api.addInterceptor(interceptor);
 
-      await api.torrents.controlTorrent(
-          operation: 'delete',
-          torrentId: 1,
-        );
+      await api.torrents.controlTorrent(operation: 'delete', torrentId: 1);
       expect(calls, 1);
 
       api.removeInterceptor(interceptor);
       try {
         // No longer short-circuited, so this now attempts a real request
         // and fails instead of resolving locally.
-        await api.torrents.controlTorrent(
-          operation: 'delete',
-          torrentId: 1,
-        );
+        await api.torrents.controlTorrent(operation: 'delete', torrentId: 1);
       } on TorboxApiException {
         // Expected.
       }
@@ -1376,14 +1369,14 @@ void main() {
     test('torrent-only fields are not modelled on usenet/web downloads', () {
       // Guards against re-adding fields the API does not return: the torrent
       // sample has upload_speed/torrent_file/availability, these two do not.
-      final usenet = _decode(usenetBody, _listOf(UsenetDownloadData.fromJson))
-          .data!
-          .single
-          .toJson();
-      final webdl = _decode(webdlBody, _listOf(WebDownloadData.fromJson))
-          .data!
-          .single
-          .toJson();
+      final usenet = _decode(
+        usenetBody,
+        _listOf(UsenetDownloadData.fromJson),
+      ).data!.single.toJson();
+      final webdl = _decode(
+        webdlBody,
+        _listOf(WebDownloadData.fromJson),
+      ).data!.single.toJson();
       for (final json in [usenet, webdl]) {
         expect(json.containsKey('upload_speed'), isFalse);
         expect(json.containsKey('torrent_file'), isFalse);
@@ -1425,31 +1418,27 @@ void main() {
         RequestOptions? sent;
         final client = _capturingClient((options) => sent = options);
 
-        await TorrentsService(client).controlTorrent(
-          operation: 'delete',
-          torrentId: 1,
-        );
+        await TorrentsService(
+          client,
+        ).controlTorrent(operation: 'delete', torrentId: 1);
         expect(_bodyKeys(sent!), {'operation', 'torrent_id', 'all'});
         expect((sent!.data as Map<String, dynamic>)['torrent_id'], 1);
 
-        await UsenetService(client).controlUsenetDownload(
-          operation: 'pause',
-          all: true,
-        );
+        await UsenetService(
+          client,
+        ).controlUsenetDownload(operation: 'pause', all: true);
         expect(_bodyKeys(sent!), {'operation', 'usenet_id', 'all'});
         expect((sent!.data as Map<String, dynamic>)['all'], isTrue);
 
-        await WebDownloadsService(client).controlWebDownload(
-          operation: 'delete',
-          webdlId: 2,
-        );
+        await WebDownloadsService(
+          client,
+        ).controlWebDownload(operation: 'delete', webdlId: 2);
         expect(_bodyKeys(sent!), {'operation', 'webdl_id', 'all'});
         expect((sent!.data as Map<String, dynamic>)['webdl_id'], 2);
 
-        await QueuedService(client).controlQueuedDownload(
-          operation: 'start',
-          queuedId: 3,
-        );
+        await QueuedService(
+          client,
+        ).controlQueuedDownload(operation: 'start', queuedId: 3);
         expect(_bodyKeys(sent!), {'operation', 'queued_id', 'all'});
         expect((sent!.data as Map<String, dynamic>)['queued_id'], 3);
       });
@@ -1458,10 +1447,9 @@ void main() {
         RequestOptions? sent;
         final client = _capturingClient((options) => sent = options);
 
-        await UsenetService(client).editUsenetDownload(
-          usenetDownloadId: 4,
-          airlocked: true,
-        );
+        await UsenetService(
+          client,
+        ).editUsenetDownload(usenetDownloadId: 4, airlocked: true);
         expect(_bodyKeys(sent!), {
           'usenet_download_id',
           'name',
@@ -1495,10 +1483,9 @@ void main() {
         RequestOptions? sent;
         final client = _capturingClient((options) => sent = options);
 
-        await RssFeedsService(client).controlRssFeed(
-          operation: 'pause',
-          rssFeedId: 4,
-        );
+        await RssFeedsService(
+          client,
+        ).controlRssFeed(operation: 'pause', rssFeedId: 4);
         expect(_bodyKeys(sent!), {'operation', 'rss_feed_id'});
 
         await IntegrationsService(client).addToGoogleDrive(
@@ -1519,10 +1506,9 @@ void main() {
         expect((sent!.data as Map<String, dynamic>)['google_token'], 'tok');
 
         // Each cloud endpoint sends only its own token field.
-        await IntegrationsService(client).addToPixeldrain(
-          id: 1,
-          pixeldrainToken: 'pd',
-        );
+        await IntegrationsService(
+          client,
+        ).addToPixeldrain(id: 1, pixeldrainToken: 'pd');
         expect(_bodyKeys(sent!), {
           'id',
           'file_id',
@@ -1547,7 +1533,7 @@ void main() {
         expect(_bodyKeys(sent!), {'session_token', 'confirmation_code'});
       });
 
-      test('settings request covers every documented field', () async {
+      test('partial settings request preserves unedited fields', () async {
         RequestOptions? sent;
         final client = _capturingClient((options) => sent = options);
 
@@ -1562,8 +1548,16 @@ void main() {
         );
 
         final body = sent!.data as Map<String, dynamic>;
-        // The field count guards against a silently added or removed setting.
-        expect(body, hasLength(62));
+        expect(body.keys.toSet(), {
+          'show_tracker_in_torrents',
+          'download_speed_in_tab',
+          'jdownloader_notifications',
+          'stremio_limit_per_resolution_torrent',
+          'append_filename_to_links',
+          'subscribed_email_segments',
+          'dashboard_filter',
+        });
+        expect(body.values, isNot(contains(null)));
         expect(body['show_tracker_in_torrents'], isTrue);
         expect(body['download_speed_in_tab'], isTrue);
         expect(body['jdownloader_notifications'], isTrue);
@@ -1662,11 +1656,12 @@ void main() {
       RequestOptions? sent;
       final client = _capturingClient((options) => sent = options);
 
-      await TorrentsService(client).checkCachedAvailabilityPost(
-        hashes: ['a', 'b'],
-        format: 'list',
-      );
-      expect(sent!.data, {'hashes': ['a', 'b']});
+      await TorrentsService(
+        client,
+      ).checkCachedAvailabilityPost(hashes: ['a', 'b'], format: 'list');
+      expect(sent!.data, {
+        'hashes': ['a', 'b'],
+      });
       expect(sent!.queryParameters, {'format': 'list'});
     });
   });

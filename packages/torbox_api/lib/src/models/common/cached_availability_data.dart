@@ -44,16 +44,15 @@ abstract class CachedFileData with _$CachedFileData {
 /// Parses a full API envelope for the `/checkcached` endpoints with
 /// `format=list`, whose `data` is a plain list of availability entries.
 TorBoxResponse<List<CachedAvailabilityData>>
-    cachedAvailabilityListResponseFromJson(Map<String, dynamic> json) =>
-        TorBoxResponse.fromJson(
-          json,
-          (data) => (data as List<dynamic>)
-              .map(
-                (e) =>
-                    CachedAvailabilityData.fromJson(e as Map<String, dynamic>),
-              )
-              .toList(),
-        );
+cachedAvailabilityListResponseFromJson(Map<String, dynamic> json) =>
+    TorBoxResponse.fromJson(
+      json,
+      (data) => (data as List<dynamic>)
+          .map(
+            (e) => CachedAvailabilityData.fromJson(e as Map<String, dynamic>),
+          )
+          .toList(),
+    );
 
 /// Parses a full API envelope for the `/checkcached` endpoints, whose
 /// `data` maps hashes to availability entries.

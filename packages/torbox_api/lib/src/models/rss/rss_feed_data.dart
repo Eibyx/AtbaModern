@@ -29,6 +29,7 @@ abstract class RssFeedData with _$RssFeedData {
     String? type,
     int? torrentSeeding,
     String? state,
+    bool? passCheck,
   }) = _RssFeedData;
 
   factory RssFeedData.fromJson(Map<String, dynamic> json) =>

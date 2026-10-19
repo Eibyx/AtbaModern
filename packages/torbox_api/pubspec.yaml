@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   dio: ^5.9.0
+  http_parser: ^4.1.2
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0
 
