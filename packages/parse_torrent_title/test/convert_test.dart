@@ -8,10 +8,36 @@ import 'package:test/test.dart';
 void main() {
   group('Convert', () {
     test("Better.Call.Saul.S03E04.CONVERT.720p.WEB.h264-TBS", () {
-      expect(parse("Better.Call.Saul.S03E04.CONVERT.720p.WEB.h264-TBS"), equals({"resolution": "720p", "convert": true, "codec": "h264", "group": "TBS", "seasons": [3], "season": 3, "episodes": [4], "episode": 4, "source": "WEB", "title": "Better Call Saul"}));
+      expect(
+          parse("Better.Call.Saul.S03E04.CONVERT.720p.WEB.h264-TBS"),
+          equals({
+            "resolution": "720p",
+            "convert": true,
+            "codec": "h264",
+            "group": "TBS",
+            "seasons": [3],
+            "season": 3,
+            "episodes": [4],
+            "episode": 4,
+            "source": "WEB",
+            "title": "Better Call Saul"
+          }));
     });
     test("Have I Got News For You S53E02 EXTENDED 720p HDTV x264-QPEL", () {
-      expect(parse("Have I Got News For You S53E02 EXTENDED 720p HDTV x264-QPEL"), equals({"resolution": "720p", "extended": true, "source": "HDTV", "codec": "x264", "group": "QPEL", "seasons": [53], "season": 53, "episodes": [2], "episode": 2, "title": "Have I Got News For You"}));
+      expect(
+          parse("Have I Got News For You S53E02 EXTENDED 720p HDTV x264-QPEL"),
+          equals({
+            "resolution": "720p",
+            "extended": true,
+            "source": "HDTV",
+            "codec": "x264",
+            "group": "QPEL",
+            "seasons": [53],
+            "season": 53,
+            "episodes": [2],
+            "episode": 2,
+            "title": "Have I Got News For You"
+          }));
     });
     test("convert", () {
       expect(parse("convert"), equals({"title": "convert"}));

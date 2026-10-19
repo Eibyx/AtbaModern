@@ -21,11 +21,9 @@ bool jsTruthy(Object? value) {
 }
 
 /// Whitespace as recognised by JavaScript's `\s` and `String.prototype.trim`.
-final RegExp _jsWhitespace = RegExp(
-  r'^[\s﻿   -    '
-  r' 　﻿]+|[\s﻿   -    '
-  r' 　﻿]+$'
-);
+final RegExp _jsWhitespace = RegExp(r'^[\s﻿   -    '
+    r' 　﻿]+|[\s﻿   -    '
+    r' 　﻿]+$');
 
 /// Equivalent of JavaScript's `parseInt(string, 10)`.
 ///

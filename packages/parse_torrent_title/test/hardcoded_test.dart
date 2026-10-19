@@ -8,7 +8,18 @@ import 'package:test/test.dart';
 void main() {
   group('Hardcoded', () {
     test("Ghost In The Shell 2017 1080p HC HDRip X264 AC3-EVO", () {
-      expect(parse("Ghost In The Shell 2017 1080p HC HDRip X264 AC3-EVO"), equals({"resolution": "1080p", "year": 2017, "hardcoded": true, "source": "HDRip", "codec": "x264", "audio": "ac3", "group": "EVO", "title": "Ghost In The Shell"}));
+      expect(
+          parse("Ghost In The Shell 2017 1080p HC HDRip X264 AC3-EVO"),
+          equals({
+            "resolution": "1080p",
+            "year": 2017,
+            "hardcoded": true,
+            "source": "HDRip",
+            "codec": "x264",
+            "audio": "ac3",
+            "group": "EVO",
+            "title": "Ghost In The Shell"
+          }));
     });
     test("hardcoded", () {
       expect(parse("hardcoded"), equals({"title": "hardcoded"}));

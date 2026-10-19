@@ -7,9 +7,8 @@ import 'transformers.dart';
 // corrupt a range.
 //
 // chinese/japanese/russian chars, as used by the title-cleaning regexes
-const String _nonEnglishChars =
-  '\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF'
-  '\uF900-\uFAFF\uFF66-\uFF9F\u0400-\u04FF';
+const String _nonEnglishChars = '\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF'
+    '\uF900-\uFAFF\uFF66-\uFF9F\u0400-\u04FF';
 
 /// Opening release-group marking: the class is `[`, U+3010 and U+2605.
 const String _openMark = '[[\u3010\u2605]';
@@ -134,7 +133,8 @@ final RegExp _beforeTitle = RegExp(r'^\[[^[\]]+]');
 
 /// A matcher built from a regular expression plus an optional transformer.
 class RegExpHandler extends Handler {
-  RegExpHandler(super.handlerName, this.pattern, this.transformer, this.options);
+  RegExpHandler(
+      super.handlerName, this.pattern, this.transformer, this.options);
 
   final RegExp pattern;
   final Transformer transformer;
@@ -165,8 +165,8 @@ class RegExpHandler extends Handler {
     final matchIndex = match.start;
 
     final beforeTitleMatch = _beforeTitle.firstMatch(title);
-    final isBeforeTitle =
-        beforeTitleMatch != null && matchIndex < beforeTitleMatch.group(0)!.length;
+    final isBeforeTitle = beforeTitleMatch != null &&
+        matchIndex < beforeTitleMatch.group(0)!.length;
 
     final otherMatches =
         matched.entries.where((entry) => entry.key != handlerName).toList();
@@ -185,10 +185,12 @@ class RegExpHandler extends Handler {
 
     if (isSkipIfFirst || isSkipIfBefore) return null;
 
-    matched.putIfAbsent(handlerName, () => <String, dynamic>{
-      'rawMatch': rawMatch,
-      'matchIndex': matchIndex,
-    });
+    matched.putIfAbsent(
+        handlerName,
+        () => <String, dynamic>{
+              'rawMatch': rawMatch,
+              'matchIndex': matchIndex,
+            });
 
     result[handlerName] = transformed;
 
@@ -252,8 +254,8 @@ String cleanTitle(String rawTitle) {
       .replaceFirst(_russianCast, '');
 
   // Remove a release-group marking section from the start ...
-  cleaned = _replaceWithGroup1(
-      RegExp('^$_openMark.*$_closeMark[ .]?(.+)'), cleaned);
+  cleaned =
+      _replaceWithGroup1(RegExp('^$_openMark.*$_closeMark[ .]?(.+)'), cleaned);
 
   // ... and an unneeded one at the end.
   cleaned =
@@ -275,8 +277,7 @@ String cleanTitle(String rawTitle) {
 
 /// Applies an ordered list of matchers to a torrent release name.
 class Parser {
-  Parser([List<Handler>? handlers])
-      : _handlers = <Handler>[...?handlers];
+  Parser([List<Handler>? handlers]) : _handlers = <Handler>[...?handlers];
 
   final List<Handler> _handlers;
 

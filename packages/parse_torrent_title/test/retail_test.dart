@@ -8,7 +8,13 @@ import 'package:test/test.dart';
 void main() {
   group('Retail', () {
     test("MONSTER HIGH: ELECTRIFIED (2017) Retail PAL DVD9 [EAGLE]", () {
-      expect(parse("MONSTER HIGH: ELECTRIFIED (2017) Retail PAL DVD9 [EAGLE]"), equals({"year": 2017, "retail": true, "title": "MONSTER HIGH: ELECTRIFIED"}));
+      expect(
+          parse("MONSTER HIGH: ELECTRIFIED (2017) Retail PAL DVD9 [EAGLE]"),
+          equals({
+            "year": 2017,
+            "retail": true,
+            "title": "MONSTER HIGH: ELECTRIFIED"
+          }));
     });
     test("retail", () {
       expect(parse("retail"), equals({"retail": true, "title": "retail"}));

@@ -8,13 +8,37 @@ import 'package:test/test.dart';
 void main() {
   group('Region', () {
     test("Welcome to New York 2014 R5 XviD AC3-SUPERFAST", () {
-      expect(parse("Welcome to New York 2014 R5 XviD AC3-SUPERFAST"), equals({"year": 2014, "region": "R5", "source": "R5", "codec": "xvid", "audio": "ac3", "group": "SUPERFAST", "title": "Welcome to New York"}));
+      expect(
+          parse("Welcome to New York 2014 R5 XviD AC3-SUPERFAST"),
+          equals({
+            "year": 2014,
+            "region": "R5",
+            "source": "R5",
+            "codec": "xvid",
+            "audio": "ac3",
+            "group": "SUPERFAST",
+            "title": "Welcome to New York"
+          }));
     });
     test("R5", () {
-      expect(parse("R5"), equals({"region": "R5", "source": "R5", "title": ""}));
+      expect(
+          parse("R5"), equals({"region": "R5", "source": "R5", "title": ""}));
     });
-    test("[Coalgirls]_Code_Geass_R2_06_(1920x1080_Blu-ray_FLAC)_[F8C7FE25].mkv", () {
-      expect(parse("[Coalgirls]_Code_Geass_R2_06_(1920x1080_Blu-ray_FLAC)_[F8C7FE25].mkv"), equals({"episodeCode": "F8C7FE25", "resolution": "1080p", "source": "BluRay", "audio": "flac", "container": "mkv", "group": "Coalgirls", "extension": "mkv", "title": "Code Geass R2 06"}));
+    test("[Coalgirls]_Code_Geass_R2_06_(1920x1080_Blu-ray_FLAC)_[F8C7FE25].mkv",
+        () {
+      expect(
+          parse(
+              "[Coalgirls]_Code_Geass_R2_06_(1920x1080_Blu-ray_FLAC)_[F8C7FE25].mkv"),
+          equals({
+            "episodeCode": "F8C7FE25",
+            "resolution": "1080p",
+            "source": "BluRay",
+            "audio": "flac",
+            "container": "mkv",
+            "group": "Coalgirls",
+            "extension": "mkv",
+            "title": "Code Geass R2 06"
+          }));
     });
     test("region", () {
       expect(parse("region"), equals({"title": "region"}));

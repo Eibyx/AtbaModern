@@ -8,10 +8,35 @@ import 'package:test/test.dart';
 void main() {
   group('Unrated', () {
     test("Identity.Thief.2013.Vostfr.UNRATED.BluRay.720p.DTS.x264-Nenuko", () {
-      expect(parse("Identity.Thief.2013.Vostfr.UNRATED.BluRay.720p.DTS.x264-Nenuko"), equals({"resolution": "720p", "year": 2013, "unrated": true, "source": "BluRay", "codec": "x264", "audio": "dts", "group": "Nenuko", "languages": ["french"], "title": "Identity Thief"}));
+      expect(
+          parse(
+              "Identity.Thief.2013.Vostfr.UNRATED.BluRay.720p.DTS.x264-Nenuko"),
+          equals({
+            "resolution": "720p",
+            "year": 2013,
+            "unrated": true,
+            "source": "BluRay",
+            "codec": "x264",
+            "audio": "dts",
+            "group": "Nenuko",
+            "languages": ["french"],
+            "title": "Identity Thief"
+          }));
     });
-    test("Charlie.les.filles.lui.disent.merci.2007.UNCENSORED.TRUEFRENCH.DVDRiP.AC3.Libe", () {
-      expect(parse("Charlie.les.filles.lui.disent.merci.2007.UNCENSORED.TRUEFRENCH.DVDRiP.AC3.Libe"), equals({"year": 2007, "unrated": true, "source": "DVDRip", "audio": "ac3", "languages": ["french"], "title": "Charlie les filles lui disent merci"}));
+    test(
+        "Charlie.les.filles.lui.disent.merci.2007.UNCENSORED.TRUEFRENCH.DVDRiP.AC3.Libe",
+        () {
+      expect(
+          parse(
+              "Charlie.les.filles.lui.disent.merci.2007.UNCENSORED.TRUEFRENCH.DVDRiP.AC3.Libe"),
+          equals({
+            "year": 2007,
+            "unrated": true,
+            "source": "DVDRip",
+            "audio": "ac3",
+            "languages": ["french"],
+            "title": "Charlie les filles lui disent merci"
+          }));
     });
     test("unrated", () {
       expect(parse("unrated"), equals({"unrated": true, "title": "unrated"}));

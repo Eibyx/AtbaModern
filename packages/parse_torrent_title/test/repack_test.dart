@@ -8,10 +8,38 @@ import 'package:test/test.dart';
 void main() {
   group('Repack', () {
     test("Silicon Valley S04E03 REPACK HDTV x264-SVA", () {
-      expect(parse("Silicon Valley S04E03 REPACK HDTV x264-SVA"), equals({"repack": true, "source": "HDTV", "codec": "x264", "group": "SVA", "seasons": [4], "season": 4, "episodes": [3], "episode": 3, "title": "Silicon Valley"}));
+      expect(
+          parse("Silicon Valley S04E03 REPACK HDTV x264-SVA"),
+          equals({
+            "repack": true,
+            "source": "HDTV",
+            "codec": "x264",
+            "group": "SVA",
+            "seasons": [4],
+            "season": 4,
+            "episodes": [3],
+            "episode": 3,
+            "title": "Silicon Valley"
+          }));
     });
-    test("Expedition Unknown S03E14 Corsicas Nazi Treasure RERIP 720p HDTV x264-W4F", () {
-      expect(parse("Expedition Unknown S03E14 Corsicas Nazi Treasure RERIP 720p HDTV x264-W4F"), equals({"resolution": "720p", "repack": true, "source": "HDTV", "codec": "x264", "group": "W4F", "seasons": [3], "season": 3, "episodes": [14], "episode": 14, "title": "Expedition Unknown"}));
+    test(
+        "Expedition Unknown S03E14 Corsicas Nazi Treasure RERIP 720p HDTV x264-W4F",
+        () {
+      expect(
+          parse(
+              "Expedition Unknown S03E14 Corsicas Nazi Treasure RERIP 720p HDTV x264-W4F"),
+          equals({
+            "resolution": "720p",
+            "repack": true,
+            "source": "HDTV",
+            "codec": "x264",
+            "group": "W4F",
+            "seasons": [3],
+            "season": 3,
+            "episodes": [14],
+            "episode": 14,
+            "title": "Expedition Unknown"
+          }));
     });
     test("repack", () {
       expect(parse("repack"), equals({"title": "repack"}));
