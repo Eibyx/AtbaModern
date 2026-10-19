@@ -26,7 +26,7 @@ abstract class IntegrationJobData with _$IntegrationJobData {
     /// Populated once the transfer completes.
     String? downloadUrl,
     required String status,
-    required String fileName,
+    @Default('') String fileName,
 
     /// Returned by the list endpoints.
     @JsonKey(name: 'task_id') String? taskId,

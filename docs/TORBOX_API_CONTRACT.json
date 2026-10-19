@@ -1,0 +1,3064 @@
+{
+  "source": "https://api.torbox.app/openapi.json",
+  "retrieved": "2026-10-19",
+  "sha256": "48fbbce879de6aaf2800ad5f7700230e7de018a675ec2ca47d2412f6e17dd445",
+  "paths": {
+    "/v1/api/user/me": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get User",
+        "description": "Returns the user's information, as well as settings if requested. Requires API key.",
+        "operationId": "get_user_v1_api_user_me_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "settings",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Settings"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/user/subscriptions": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get Subscriptions",
+        "description": "Returns the user's referral data.",
+        "operationId": "get_subscriptions_v1_api_user_subscriptions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/user/transactions": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get Transactions",
+        "description": "Returns the user's transactions.",
+        "operationId": "get_transactions_v1_api_user_transactions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/user/settings/editsettings": {
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Edit General Settings",
+        "description": "Edits the user's general settings.",
+        "operationId": "edit_general_settings_v1_api_user_settings_editsettings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BaseSettingsModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/user/stats": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get User Stats",
+        "description": "Returns the user's general statistics, such as data downloaded, data egressed, overall ratio, and total downloaded.",
+        "operationId": "get_user_stats_v1_api_user_stats_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "general",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": true,
+              "title": "General"
+            }
+          },
+          {
+            "name": "bandwidth",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Bandwidth"
+            }
+          },
+          {
+            "name": "bandwidth_grouping",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "day",
+              "title": "Bandwidth Grouping"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/torrents/mylist": {
+      "get": {
+        "tags": [
+          "torrents"
+        ],
+        "summary": "Get My Torrent List",
+        "operationId": "get_my_torrent_list_v1_api_torrents_mylist_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Id"
+            }
+          },
+          {
+            "name": "bypass_cache",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Bypass Cache"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1000,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/notifications/rss": {
+      "get": {
+        "tags": [
+          "general"
+        ],
+        "summary": "Get Rss Notifications",
+        "description": "The RSS notifications endpoint. Returns an RSS feed of all notifications for a user. Requires API key.",
+        "operationId": "get_rss_notifications_v1_api_notifications_rss_get",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/notifications/mynotifications": {
+      "get": {
+        "tags": [
+          "general"
+        ],
+        "summary": "Get Notifications",
+        "description": "The notifications endpoint. Returns all notifications for a user. Requires API key.",
+        "operationId": "get_notifications_v1_api_notifications_mynotifications_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/notifications/clear": {
+      "post": {
+        "tags": [
+          "general"
+        ],
+        "summary": "Clear All Notifications",
+        "description": "The clear notifications endpoint. Clears all notifications for a user. Requires API key.",
+        "operationId": "clear_all_notifications_v1_api_notifications_clear_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/notifications/clear/{id}": {
+      "post": {
+        "tags": [
+          "general"
+        ],
+        "summary": "Clear Notification",
+        "description": "The clear notification endpoint. Clears a single notification for a user. Requires API key.",
+        "operationId": "clear_notification_v1_api_notifications_clear__id__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/notifications/test": {
+      "post": {
+        "tags": [
+          "general"
+        ],
+        "summary": "Test Notification",
+        "description": "The test notifications endpoint. Sends a test notification to the user. Requires API key. Rate limited to 1 per minute.",
+        "operationId": "test_notification_v1_api_notifications_test_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/webdl/mylist": {
+      "get": {
+        "tags": [
+          "web downloads"
+        ],
+        "summary": "Get My Webdownloads List",
+        "operationId": "get_my_webdownloads_list_v1_api_webdl_mylist_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Id"
+            }
+          },
+          {
+            "name": "bypass_cache",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Bypass Cache"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1000,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/usenet/mylist": {
+      "get": {
+        "tags": [
+          "usenet downloads"
+        ],
+        "summary": "Get My Usenetdownloads List",
+        "operationId": "get_my_usenetdownloads_list_v1_api_usenet_mylist_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Id"
+            }
+          },
+          {
+            "name": "bypass_cache",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Bypass Cache"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1000,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/rss/addrss": {
+      "post": {
+        "tags": [
+          "rss"
+        ],
+        "summary": "Add Rss Feed",
+        "description": "Adds a new RSS feed that the user can use to download torrents. Requires an API key.",
+        "operationId": "add_rss_feed_v1_api_rss_addrss_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddRss"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/rss/controlrss": {
+      "post": {
+        "tags": [
+          "rss"
+        ],
+        "summary": "Control Rss Feed",
+        "description": "Controls an RSS feed. Requires an API key.",
+        "operationId": "control_rss_feed_v1_api_rss_controlrss_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ControlRss"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/rss/modifyrss": {
+      "post": {
+        "tags": [
+          "rss"
+        ],
+        "summary": "Modify Rss Feed",
+        "description": "Modifies an RSS feed. Requires an API key.",
+        "operationId": "modify_rss_feed_v1_api_rss_modifyrss_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModifyRss"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/rss/getfeeds": {
+      "get": {
+        "tags": [
+          "rss"
+        ],
+        "summary": "Get Rss Feeds",
+        "description": "Gets all RSS feeds for a user. Requires an API key.",
+        "operationId": "get_rss_feeds_v1_api_rss_getfeeds_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/rss/getfeeditems": {
+      "get": {
+        "tags": [
+          "rss"
+        ],
+        "summary": "Get Rss Feed Items",
+        "description": "Gets all RSS feeds for a user. Requires an API key.",
+        "operationId": "get_rss_feed_items_v1_api_rss_getfeeditems_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "rss_feed_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Rss Feed Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/integration/oauth/me": {
+      "get": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Get Oauth Integrations",
+        "description": "Get OAuth integrations for the authenticated user.",
+        "operationId": "get_oauth_integrations_v1_api_integration_oauth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/integration/oauth/{provider}": {
+      "get": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Oauth Redirect",
+        "description": "Redirects to the OAuth provider for authentication.",
+        "operationId": "oauth_redirect_v1_api_integration_oauth__provider__get",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/integration/oauth/{provider}/callback": {
+      "get": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Oauth Callback",
+        "description": "Callback URL for OAuth provider.",
+        "operationId": "oauth_callback_v1_api_integration_oauth__provider__callback_get",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Oauth Callback",
+        "description": "Callback URL for OAuth provider.",
+        "operationId": "oauth_callback_v1_api_integration_oauth__provider__callback_get",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/integration/oauth/{provider}/success": {
+      "get": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Oauth Success",
+        "description": "Provides token after successful OAuth authentication.",
+        "operationId": "oauth_success_v1_api_integration_oauth__provider__success_get",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/integration/googledrive": {
+      "post": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Add To Google Drive",
+        "description": "Uploads a file or zip to Google Drive. Requires API key and Google Drive Oauth token.",
+        "operationId": "add_to_google_drive_v1_api_integration_googledrive_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddToGoogleDrive"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/integration/dropbox": {
+      "post": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Add To Dropbox",
+        "description": "Uploads a file or zip to Dropbox. Requires API key and Dropbox Oauth token.",
+        "operationId": "add_to_dropbox_v1_api_integration_dropbox_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddToDropbox"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/integration/onedrive": {
+      "post": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Add To Onedrive",
+        "description": "Uploads a file or zip to Onedrive. Requires API key and Onedrive Oauth token.",
+        "operationId": "add_to_onedrive_v1_api_integration_onedrive_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddToOnedrive"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/integration/gofile": {
+      "post": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Add To Gofile",
+        "description": "Uploads a file or zip to Gofile. Requires API key, and optional Gofile API token.",
+        "operationId": "add_to_gofile_v1_api_integration_gofile_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddToGofile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/integration/1fichier": {
+      "post": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Add To 1Fichier",
+        "description": "Uploads a file or zip to 1Fichier. Requires API key, and optional 1Fichier API token.",
+        "operationId": "add_to_1fichier_v1_api_integration_1fichier_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTo1Fichier"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/integration/pixeldrain": {
+      "post": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Add To Pixeldrain",
+        "description": "Uploads a file or zip to Pixeldrain.",
+        "operationId": "add_to_pixeldrain_v1_api_integration_pixeldrain_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddToPixeldrain"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/integration/job/{job_id}": {
+      "get": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Get Job Status",
+        "description": "Get the status of a transfer.",
+        "operationId": "get_job_status_v1_api_integration_job__job_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Cancel Job",
+        "description": "Cancels a transfer job.",
+        "operationId": "cancel_job_v1_api_integration_job__job_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/integration/jobs": {
+      "get": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Get All Jobs",
+        "description": "Get all active transfers.",
+        "operationId": "get_all_jobs_v1_api_integration_jobs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/integration/jobs/{hash}": {
+      "get": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Get Job By Hash",
+        "description": "Get all active transfers by hash.",
+        "operationId": "get_job_by_hash_v1_api_integration_jobs__hash__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Hash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/integration/oauth/{provider}/register": {
+      "post": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Oauth Register",
+        "description": "Registers a new OAuth link with the specified provider.",
+        "operationId": "oauth_register_v1_api_integration_oauth__provider__register_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthRegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/integration/oauth/{provider}/unregister": {
+      "delete": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Oauth Unregister",
+        "description": "Unregisters an OAuth link with the specified provider.",
+        "operationId": "oauth_unregister_v1_api_integration_oauth__provider__unregister_delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/integration/oauth/discord/linked_roles": {
+      "post": {
+        "tags": [
+          "integration"
+        ],
+        "summary": "Get Linked Discord Roles",
+        "operationId": "get_linked_discord_roles_v1_api_integration_oauth_discord_linked_roles_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkedRolesData"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/api/queued/getqueued": {
+      "get": {
+        "tags": [
+          "queued"
+        ],
+        "summary": "Get Queued Downlodas",
+        "description": "Gets a list of queued downloads. Requires API key.",
+        "operationId": "get_queued_downlodas_v1_api_queued_getqueued_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Id"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "torrent",
+              "title": "Type"
+            }
+          },
+          {
+            "name": "bypass_cache",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Bypass Cache"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1000,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again.",
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/queued/controlqueued": {
+      "post": {
+        "tags": [
+          "queued"
+        ],
+        "summary": "Control Queued",
+        "description": "Controls a queued torrent. Requires API key.",
+        "operationId": "control_queued_v1_api_queued_controlqueued_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ControlQueuedDownload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "success": false,
+            "error": "ENDPOINT_NOT_FOUND",
+            "detail": "Endpoint not found. Please check the URL and try again."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "schemas": {
+    "AddRss": {
+      "properties": {
+        "url": {
+          "type": "string",
+          "title": "Url"
+        },
+        "name": {
+          "type": "string",
+          "title": "Name"
+        },
+        "do_regex": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Do Regex"
+        },
+        "dont_regex": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dont Regex"
+        },
+        "dont_older_than": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dont Older Than"
+        },
+        "pass_check": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Pass Check",
+          "default": false
+        },
+        "scan_interval": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Scan Interval",
+          "default": 60
+        },
+        "rss_type": {
+          "type": "string",
+          "title": "Rss Type",
+          "default": "torrent"
+        },
+        "torrent_seeding": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Torrent Seeding",
+          "default": 1
+        }
+      },
+      "type": "object",
+      "required": [
+        "url",
+        "name"
+      ],
+      "title": "AddRss"
+    },
+    "ModifyRss": {
+      "properties": {
+        "rss_feed_id": {
+          "type": "integer",
+          "title": "Rss Feed Id"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Name"
+        },
+        "do_regex": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Do Regex"
+        },
+        "dont_regex": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dont Regex"
+        },
+        "scan_interval": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Scan Interval",
+          "default": 60
+        },
+        "dont_older_than": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dont Older Than"
+        },
+        "rss_type": {
+          "type": "string",
+          "title": "Rss Type",
+          "default": [
+            "torrent"
+          ]
+        },
+        "torrent_seeding": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Torrent Seeding",
+          "default": 1
+        }
+      },
+      "type": "object",
+      "required": [
+        "rss_feed_id"
+      ],
+      "title": "ModifyRss"
+    },
+    "ControlRss": {
+      "properties": {
+        "operation": {
+          "type": "string",
+          "title": "Operation"
+        },
+        "rss_feed_id": {
+          "type": "integer",
+          "title": "Rss Feed Id"
+        }
+      },
+      "type": "object",
+      "required": [
+        "operation",
+        "rss_feed_id"
+      ],
+      "title": "ControlRss"
+    },
+    "BaseSettingsModel": {
+      "properties": {
+        "email_notifications": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Email Notifications"
+        },
+        "web_notifications": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Web Notifications"
+        },
+        "mobile_notifications": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mobile Notifications"
+        },
+        "rss_notifications": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rss Notifications"
+        },
+        "download_speed_in_tab": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Download Speed In Tab"
+        },
+        "show_tracker_in_torrents": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Show Tracker In Torrents"
+        },
+        "stremio_quality": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Quality"
+        },
+        "stremio_resolution": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Resolution"
+        },
+        "stremio_language": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Language"
+        },
+        "stremio_cache": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Cache"
+        },
+        "stremio_size_lower": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Size Lower"
+        },
+        "google_drive_folder_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Google Drive Folder Id"
+        },
+        "onedrive_save_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Onedrive Save Path"
+        },
+        "discord_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Discord Id"
+        },
+        "discord_notifications": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Discord Notifications"
+        },
+        "stremio_allow_adult": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Allow Adult"
+        },
+        "stremio_seed_torrents": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Seed Torrents"
+        },
+        "seed_torrents": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Seed Torrents"
+        },
+        "allow_zipped": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Allow Zipped"
+        },
+        "stremio_allow_zipped": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Allow Zipped"
+        },
+        "onefichier_folder_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Onefichier Folder Id"
+        },
+        "gofile_folder_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Gofile Folder Id"
+        },
+        "webhook_notifications": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Webhook Notifications"
+        },
+        "webhook_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Webhook Url"
+        },
+        "telegram_notifications": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Telegram Notifications"
+        },
+        "telegram_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Telegram Id"
+        },
+        "mega_email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mega Email"
+        },
+        "mega_password": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mega Password"
+        },
+        "stremio_sort": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Sort"
+        },
+        "cdn_selection": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cdn Selection"
+        },
+        "stremio_use_custom_search_engines": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Use Custom Search Engines"
+        },
+        "stremio_result_sort": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Result Sort"
+        },
+        "webdav_use_local_files": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Webdav Use Local Files"
+        },
+        "stremio_legacy_your_media": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Legacy Your Media"
+        },
+        "stremio_only_your_media_streams": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Only Your Media Streams"
+        },
+        "stremio_disable_your_media_streams": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Disable Your Media Streams"
+        },
+        "webdav_use_folder_view": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Webdav Use Folder View"
+        },
+        "webdav_flatten": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Webdav Flatten"
+        },
+        "stremio_limit_per_resolution_torrent": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Limit Per Resolution Torrent"
+        },
+        "stremio_limit_per_resolution_usenet": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Limit Per Resolution Usenet"
+        },
+        "stremio_size_upper": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Size Upper"
+        },
+        "stremio_torrent_seeders_cutoff": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Torrent Seeders Cutoff"
+        },
+        "pixeldrain_api_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Pixeldrain Api Key"
+        },
+        "onefichier_api_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Onefichier Api Key"
+        },
+        "gofile_api_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Gofile Api Key"
+        },
+        "patreon_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Patreon Id"
+        },
+        "stremio_wait_for_download_usenet": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Wait For Download Usenet"
+        },
+        "stremio_wait_for_download_torrent": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Wait For Download Torrent"
+        },
+        "stremio_disable_filtered_note": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Disable Filtered Note"
+        },
+        "stremio_emoji_in_description": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stremio Emoji In Description"
+        },
+        "dashboard_filter": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dashboard Filter"
+        },
+        "web_player_always_transcode": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Web Player Always Transcode"
+        },
+        "web_player_always_skip_intro": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Web Player Always Skip Intro"
+        },
+        "web_player_audio_preferred_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Web Player Audio Preferred Language"
+        },
+        "web_player_subtitle_preferred_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Web Player Subtitle Preferred Language"
+        },
+        "web_player_disable_prestream_selector": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Web Player Disable Prestream Selector"
+        },
+        "dashboard_sort": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dashboard Sort"
+        },
+        "web_player_disable_next_up_dialogue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Web Player Disable Next Up Dialogue"
+        },
+        "web_player_enable_scrobbling": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Web Player Enable Scrobbling"
+        },
+        "append_filename_to_links": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Append Filename To Links"
+        },
+        "subscribed_email_segments": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Subscribed Email Segments"
+        }
+      },
+      "type": "object",
+      "title": "BaseSettingsModel"
+    },
+    "OAuthRegisterRequest": {
+      "properties": {
+        "token": {
+          "type": "string",
+          "title": "Token"
+        },
+        "refresh_token": {
+          "type": "string",
+          "title": "Refresh Token"
+        }
+      },
+      "type": "object",
+      "required": [
+        "token",
+        "refresh_token"
+      ],
+      "title": "OAuthRegisterRequest"
+    },
+    "AddToGoogleDrive": {
+      "properties": {
+        "id": {
+          "type": "integer",
+          "title": "Id"
+        },
+        "file_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "File Id"
+        },
+        "zip": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Zip",
+          "default": false
+        },
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Type",
+          "default": "torrent"
+        },
+        "google_token": {
+          "type": "string",
+          "title": "Google Token"
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "google_token"
+      ],
+      "title": "AddToGoogleDrive"
+    }
+  }
+}

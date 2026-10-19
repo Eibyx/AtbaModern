@@ -8,5 +8,6 @@ class SharedPrefsService {
   }
 
   String? getString(String key) => prefs.getString(key);
-  Future<void> setString(String key, String value) => prefs.setString(key, value);
+  Future<void> setString(String key, String value) =>
+      prefs.setString(key, value);
 }

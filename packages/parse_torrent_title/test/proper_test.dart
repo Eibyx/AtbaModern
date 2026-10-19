@@ -8,10 +8,31 @@ import 'package:test/test.dart';
 void main() {
   group('Proper', () {
     test("Into the Badlands S02E07 PROPER 720p HDTV x264-W4F", () {
-      expect(parse("Into the Badlands S02E07 PROPER 720p HDTV x264-W4F"), equals({"resolution": "720p", "proper": true, "source": "HDTV", "codec": "x264", "group": "W4F", "seasons": [2], "season": 2, "episodes": [7], "episode": 7, "title": "Into the Badlands"}));
+      expect(
+          parse("Into the Badlands S02E07 PROPER 720p HDTV x264-W4F"),
+          equals({
+            "resolution": "720p",
+            "proper": true,
+            "source": "HDTV",
+            "codec": "x264",
+            "group": "W4F",
+            "seasons": [2],
+            "season": 2,
+            "episodes": [7],
+            "episode": 7,
+            "title": "Into the Badlands"
+          }));
     });
     test("Bossi-Reality-REAL PROPER-CDM-FLAC-1999-MAHOU", () {
-      expect(parse("Bossi-Reality-REAL PROPER-CDM-FLAC-1999-MAHOU"), equals({"year": 1999, "proper": true, "audio": "flac", "group": "MAHOU", "title": "Bossi-Reality"}));
+      expect(
+          parse("Bossi-Reality-REAL PROPER-CDM-FLAC-1999-MAHOU"),
+          equals({
+            "year": 1999,
+            "proper": true,
+            "audio": "flac",
+            "group": "MAHOU",
+            "title": "Bossi-Reality"
+          }));
     });
     test("proper", () {
       expect(parse("proper"), equals({"title": "proper"}));

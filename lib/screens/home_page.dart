@@ -1,303 +1,233 @@
-import 'dart:async' show StreamSubscription;
+import 'dart:async';
 import 'dart:io';
 
-import 'package:atba/models/widgets/multi_value_change_observer.dart';
-import 'package:atba/services/torbox_service.dart' show TorboxAPI;
+import 'package:app_links/app_links.dart';
+import 'package:atba/screens/modern/account_page.dart';
+import 'package:atba/screens/modern/add_download_page.dart';
+import 'package:atba/screens/modern/automations_page.dart';
+import 'package:atba/screens/modern/dashboard_page.dart';
+import 'package:atba/screens/modern/downloads_page.dart';
+import 'package:atba/services/account_overview.dart';
+import 'package:atba/services/library_page_state.dart';
+import 'package:atba/services/torbox_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:dynamic_color/dynamic_color.dart';
-import 'package:app_links/app_links.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart'
-    show ConversionUtils;
-import 'package:provider/provider.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
-
-import 'package:atba/screens/library_page.dart';
-import 'package:atba/screens/watch_page.dart';
-import 'package:atba/screens/settings/settings_page.dart';
-import 'package:atba/config/constants.dart';
-import 'package:torbox_api/torbox_api.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return MultiValueChangeObserver(
-      cacheKeysWithDefaultValues: {
-        Constants.useMaterial3: true,
-        Constants.useTorboxFontFamily: false,
-        Constants.theme: "system",
-        Constants.useCustomColorTheme: false,
-        Constants.colorTheme: ConversionUtils.stringFromColor(
-          Color.fromRGBO(0, 246, 33, 1),
-        ),
-      },
-      builder: (context, values) {
-        return DynamicColorBuilder(
-          builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-            ColorScheme lightColorScheme;
-            ColorScheme darkColorScheme;
-
-            if (values[Constants.useCustomColorTheme]) {
-              lightColorScheme = ColorScheme.fromSeed(
-                seedColor: ConversionUtils.colorFromString(
-                  values[Constants.colorTheme],
-                ),
-                brightness: Brightness.light,
-              );
-              darkColorScheme = ColorScheme.fromSeed(
-                seedColor: ConversionUtils.colorFromString(
-                  values[Constants.colorTheme],
-                ),
-                brightness: Brightness.dark,
-              );
-            } else if (lightDynamic != null && darkDynamic != null) {
-              lightColorScheme = lightDynamic;
-              darkColorScheme = darkDynamic;
-            } else {
-              lightColorScheme = ColorScheme.fromSeed(
-                seedColor: const Color.fromRGBO(0, 246, 33, 1),
-              );
-              darkColorScheme = ColorScheme.fromSeed(
-                seedColor: const Color.fromRGBO(0, 246, 33, 1),
-                brightness: Brightness.dark,
-              );
-            }
-
-            return MaterialApp(
-              title: 'TorBox',
-              theme: ThemeData(
-                colorScheme: lightColorScheme,
-                useMaterial3: values[Constants.useMaterial3],
-                fontFamily: (values[Constants.useTorboxFontFamily])
-                    ? 'torbox-dotted-all'
-                    : null,
-              ),
-              darkTheme: ThemeData(
-                colorScheme: darkColorScheme,
-                useMaterial3: values[Constants.useMaterial3],
-                fontFamily: (values[Constants.useTorboxFontFamily])
-                    ? 'torbox-dotted-all'
-                    : null,
-              ),
-              themeMode:
-                  ThemeMode.values[[
-                    "system",
-                    "light",
-                    "dark",
-                  ].indexOf(values[Constants.theme])],
-              home: const MyHomePage(),
-            );
-          },
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => LibraryPageState(context)),
+      ChangeNotifierProvider(
+        create: (_) => AccountOverview(context.read<TorboxAPI>())..refresh(),
+      ),
+    ],
+    child: const ModernShell(),
+  );
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
+class ModernShell extends StatefulWidget {
+  const ModernShell({super.key});
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<ModernShell> createState() => _ModernShellState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _selectedIndex = 0;
-  StreamSubscription<Uri>? _linkSubscription;
-  StreamSubscription? _intentSubscription;
-  DateTime? _lastBackPressed;
-
+class _ModernShellState extends State<ModernShell> {
+  int _index = 0;
+  final Map<int, Widget> _pages = {};
+  StreamSubscription<Uri>? _links;
+  StreamSubscription<List<SharedMediaFile>>? _shares;
+  final Map<String, DateTime> _recentInputs = {};
+  bool _openingInput = false;
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _listenForInputs();
+    });
+  }
 
-    initDeepLinks();
-    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-      // Only initialize sharing intent on mobile platforms
-      initHandleIntent();
+  void _select(int index) {
+    context.read<LibraryPageState>().setVisible(index == 0 || index == 1);
+    setState(() => _index = index);
+  }
+
+  Future<void> _openInput({String? text, String? file}) async {
+    if (!mounted || _openingInput) return;
+    final key = text ?? file ?? '';
+    if (key.isEmpty) return;
+    final now = DateTime.now();
+    _recentInputs.removeWhere(
+      (_, time) => now.difference(time) > const Duration(seconds: 3),
+    );
+    if (_recentInputs.containsKey(key)) return;
+    _recentInputs[key] = now;
+    _openingInput = true;
+    try {
+      await openAddDownload(context, initialText: text, initialFile: file);
+    } finally {
+      _openingInput = false;
+    }
+  }
+
+  Future<void> _shared(List<SharedMediaFile> files) async {
+    // Review one shared payload at a time; no unsolicited remote mutations.
+    for (final file in files) {
+      if (!mounted) return;
+      if (file.type == SharedMediaType.file) {
+        await _openInput(file: file.path);
+      } else if (file.type == SharedMediaType.text ||
+          file.type == SharedMediaType.url) {
+        await _openInput(text: file.path);
+      }
+    }
+  }
+
+  Future<void> _listenForInputs() async {
+    if (kIsWeb || !Platform.isAndroid) return;
+    try {
+      final appLinks = AppLinks();
+      _links = appLinks.uriLinkStream.listen(
+        (uri) {
+          if (uri.scheme == 'magnet' ||
+              uri.scheme == 'https' ||
+              uri.scheme == 'http') {
+            _openInput(text: uri.toString());
+          }
+        },
+        onError: (Object error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Enlace externo no válido.')),
+            );
+          }
+        },
+      );
+      final initial = await appLinks.getInitialLink();
+      if (initial != null &&
+          mounted &&
+          ['magnet', 'https', 'http'].contains(initial.scheme)) {
+        await _openInput(text: initial.toString());
+      }
+      if (!mounted) return;
+      _shares = ReceiveSharingIntent.instance.getMediaStream().listen(
+        _shared,
+        onError: (Object error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'No se pudo leer el contenido compartido. Usa Añadir para importarlo.',
+                ),
+              ),
+            );
+          }
+        },
+      );
+      final initialFiles = await ReceiveSharingIntent.instance
+          .getInitialMedia();
+      if (mounted && initialFiles.isNotEmpty) await _shared(initialFiles);
+      ReceiveSharingIntent.instance.reset();
+    } on Object {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'La recepción de enlaces no está disponible. Puedes añadirlos manualmente.',
+            ),
+          ),
+        );
+      }
     }
   }
 
   @override
   void dispose() {
-    _linkSubscription?.cancel();
-    _intentSubscription?.cancel();
+    _links?.cancel();
+    _shares?.cancel();
     super.dispose();
   }
 
-  Future<void> handleTorrentFiles(List<SharedMediaFile> value) async {
-    final apiService = Provider.of<TorboxAPI>(context, listen: false);
-    for (final file in value) {
-      if (file.type == SharedMediaType.file) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Adding torrent from file: ${file.path}')),
-        );
-        final response = await apiService.createTorrent(
-          dotTorrentFile: TorboxFileUpload(
-            filename: file.path.split(Platform.pathSeparator).last,
-            bytes: await File(file.path).readAsBytes(),
-          ),
-        );
-        if (response.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Torrent added successfully!')),
-          );
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(response.detailOrUnknown)));
-        }
-      } else if (file.type == SharedMediaType.text) {
-        final uri = Uri.tryParse(file.path);
-        if (uri == null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Invalid link: ${file.path}')));
-          continue;
-        }
-        // Handle text sharing (for links)
-        if (uri.scheme == "magnet") {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Adding torrent from link: ${file.path}')),
-          );
-          final response = await apiService.createTorrent(
-            magnetLink: file.path,
-          );
-          if (response.success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Torrent added successfully!')),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Failed to add torrent: ${response.error}'),
-              ),
-            );
-          }
-        } else {
-          // add as web download
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Adding download from link: ${file.path}')),
-          );
-          final response = await apiService.createWebDownload(uri.toString());
-          if (response.success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Download added successfully!')),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Failed to add download: ${response.error}'),
-              ),
-            );
-          }
-        }
-      }
-    }
-  }
-
-  Future<void> initHandleIntent() async {
-    _intentSubscription = ReceiveSharingIntent.instance.getMediaStream().listen(
-      (value) async {
-        await handleTorrentFiles(value);
-      },
-      onError: (err) {
-        print("getIntentDataStream error: $err");
-      },
-    );
-
-    // Get the media sharing coming from outside the app while the app is closed (e.g. open torrent file in file app)
-    ReceiveSharingIntent.instance.getInitialMedia().then((value) async {
-      if (value.isEmpty) return;
-      await handleTorrentFiles(value);
-      // Tell the library that we are done processing the intent.
-      ReceiveSharingIntent.instance.reset();
-    });
-  }
-
-  Future<void> initDeepLinks() async {
-    // Handle links
-    _linkSubscription = AppLinks().uriLinkStream.listen((uri) async {
-      if (uri.scheme != "magnet") {
-        return; // this will also catch opening files, but not sharing files, so we only use it for links
-      }
-      final apiService = Provider.of<TorboxAPI>(context, listen: false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Adding torrent from link: ${uri.toString()}')),
-      );
-      final response = await apiService.createTorrent(
-        magnetLink: uri.toString(),
-      );
-      if (response.success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Torrent added successfully!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add torrent: ${response.error}')),
-        );
-      }
-    });
-  }
-
-  static final List<Widget> _pages = <Widget>[
-    LibraryPage(),
-    WatchPage(),
-    SettingsPage(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
+  Widget _page(int index) => _pages.putIfAbsent(
+    index,
+    () => switch (index) {
+      0 => DashboardPage(onDownloads: () => _select(1)),
+      1 => const DownloadsPage(),
+      2 => const AutomationsPage(),
+      _ => const AccountPage(),
+    },
+  );
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        final now = DateTime.now();
-        if (_lastBackPressed == null ||
-            now.difference(_lastBackPressed!) > const Duration(seconds: 2)) {
-          _lastBackPressed = now;
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Press back again to exit'),
-              duration: Duration(seconds: 2),
+    final body = IndexedStack(
+      index: _index,
+      children: List.generate(
+        4,
+        (i) => _pages.containsKey(i) || i == _index
+            ? _page(i)
+            : const SizedBox.shrink(),
+      ),
+    );
+    const destinations = [
+      NavigationDestination(
+        icon: Icon(Icons.space_dashboard_outlined),
+        selectedIcon: Icon(Icons.space_dashboard),
+        label: 'Inicio',
+      ),
+      NavigationDestination(
+        icon: Icon(Icons.cloud_download_outlined),
+        selectedIcon: Icon(Icons.cloud_download),
+        label: 'Descargas',
+      ),
+      NavigationDestination(
+        icon: Icon(Icons.auto_awesome_motion_outlined),
+        selectedIcon: Icon(Icons.auto_awesome_motion),
+        label: 'Automatizaciones',
+      ),
+      NavigationDestination(
+        icon: Icon(Icons.person_outline),
+        selectedIcon: Icon(Icons.person),
+        label: 'Cuenta',
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 840) {
+          return Scaffold(
+            body: Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: _index,
+                  onDestinationSelected: _select,
+                  labelType: NavigationRailLabelType.all,
+                  destinations: destinations
+                      .map(
+                        (d) => NavigationRailDestination(
+                          icon: d.icon,
+                          selectedIcon: d.selectedIcon,
+                          label: Text(d.label),
+                        ),
+                      )
+                      .toList(),
+                ),
+                const VerticalDivider(width: 1),
+                Expanded(child: body),
+              ],
             ),
           );
-          return;
         }
-        SystemNavigator.pop();
+        return Scaffold(
+          body: body,
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _index,
+            onDestinationSelected: _select,
+            destinations: destinations,
+          ),
+        );
       },
-      child: Scaffold(
-        body: _pages[_selectedIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.library_books_outlined),
-              label: 'Library',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.play_arrow),
-              label: 'Watch',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'More'),
-          ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Theme.of(context).colorScheme.primary,
-          unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          onTap: _onItemTapped,
-        ),
-      ),
     );
   }
 }
-
-void main() => runApp(const HomeScreen());

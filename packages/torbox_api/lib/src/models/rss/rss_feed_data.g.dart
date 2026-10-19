@@ -24,6 +24,7 @@ _RssFeedData _$RssFeedDataFromJson(Map<String, dynamic> json) => _RssFeedData(
   type: json['type'] as String?,
   torrentSeeding: (json['torrent_seeding'] as num?)?.toInt(),
   state: json['state'] as String?,
+  passCheck: json['pass_check'] as bool?,
 );
 
 Map<String, dynamic> _$RssFeedDataToJson(_RssFeedData instance) =>
@@ -45,4 +46,5 @@ Map<String, dynamic> _$RssFeedDataToJson(_RssFeedData instance) =>
       'type': instance.type,
       'torrent_seeding': instance.torrentSeeding,
       'state': instance.state,
+      'pass_check': instance.passCheck,
     };

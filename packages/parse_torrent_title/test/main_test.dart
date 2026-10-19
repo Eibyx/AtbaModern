@@ -8,7 +8,19 @@ import 'package:test/test.dart';
 void main() {
   group('Main', () {
     test("sons.of.anarchy.s05e10.480p.BluRay.x264-GAnGSteR", () {
-      expect(parse("sons.of.anarchy.s05e10.480p.BluRay.x264-GAnGSteR"), equals({"resolution": "480p", "source": "BluRay", "codec": "x264", "group": "GAnGSteR", "seasons": [5], "season": 5, "episodes": [10], "episode": 10, "title": "sons of anarchy"}));
+      expect(
+          parse("sons.of.anarchy.s05e10.480p.BluRay.x264-GAnGSteR"),
+          equals({
+            "resolution": "480p",
+            "source": "BluRay",
+            "codec": "x264",
+            "group": "GAnGSteR",
+            "seasons": [5],
+            "season": 5,
+            "episodes": [10],
+            "episode": 10,
+            "title": "sons of anarchy"
+          }));
     });
     test("sons of anarchy", () {
       expect(parse("sons of anarchy"), equals({"title": "sons of anarchy"}));
@@ -26,7 +38,8 @@ void main() {
       expect(parse("BRRip"), equals({"source": "BRRip", "title": ""}));
     });
     test("Da Vinci Code DVDRip", () {
-      expect(parse("Da Vinci Code DVDRip"), equals({"source": "DVDRip", "title": "Da Vinci Code"}));
+      expect(parse("Da Vinci Code DVDRip"),
+          equals({"source": "DVDRip", "title": "Da Vinci Code"}));
     });
     test("Da Vinci Code", () {
       expect(parse("Da Vinci Code"), equals({"title": "Da Vinci Code"}));
@@ -35,25 +48,50 @@ void main() {
       expect(parse("DVDRip"), equals({"source": "DVDRip", "title": ""}));
     });
     test("Some.girls.1998.DVDRip", () {
-      expect(parse("Some.girls.1998.DVDRip"), equals({"year": 1998, "source": "DVDRip", "title": "Some girls"}));
+      expect(parse("Some.girls.1998.DVDRip"),
+          equals({"year": 1998, "source": "DVDRip", "title": "Some girls"}));
     });
     test("Some girls", () {
       expect(parse("Some girls"), equals({"title": "Some girls"}));
     });
     test("Ecrit.Dans.Le.Ciel.1954.MULTI.DVDRIP.x264.AC3-gismo65", () {
-      expect(parse("Ecrit.Dans.Le.Ciel.1954.MULTI.DVDRIP.x264.AC3-gismo65"), equals({"year": 1954, "source": "DVDRip", "codec": "x264", "audio": "ac3", "group": "gismo65", "languages": ["multi audio"], "dubbed": true, "title": "Ecrit Dans Le Ciel"}));
+      expect(
+          parse("Ecrit.Dans.Le.Ciel.1954.MULTI.DVDRIP.x264.AC3-gismo65"),
+          equals({
+            "year": 1954,
+            "source": "DVDRip",
+            "codec": "x264",
+            "audio": "ac3",
+            "group": "gismo65",
+            "languages": ["multi audio"],
+            "dubbed": true,
+            "title": "Ecrit Dans Le Ciel"
+          }));
     });
     test("Ecrit Dans Le Ciel", () {
-      expect(parse("Ecrit Dans Le Ciel"), equals({"title": "Ecrit Dans Le Ciel"}));
+      expect(
+          parse("Ecrit Dans Le Ciel"), equals({"title": "Ecrit Dans Le Ciel"}));
     });
     test("gismo65", () {
       expect(parse("gismo65"), equals({"title": "gismo65"}));
     });
-    test("2019 After The Fall Of New York 1983 REMASTERED BDRip x264-GHOULS", () {
-      expect(parse("2019 After The Fall Of New York 1983 REMASTERED BDRip x264-GHOULS"), equals({"year": 1983, "remastered": true, "source": "BDRip", "codec": "x264", "group": "GHOULS", "title": "2019 After The Fall Of New York"}));
+    test("2019 After The Fall Of New York 1983 REMASTERED BDRip x264-GHOULS",
+        () {
+      expect(
+          parse(
+              "2019 After The Fall Of New York 1983 REMASTERED BDRip x264-GHOULS"),
+          equals({
+            "year": 1983,
+            "remastered": true,
+            "source": "BDRip",
+            "codec": "x264",
+            "group": "GHOULS",
+            "title": "2019 After The Fall Of New York"
+          }));
     });
     test("2019 After The Fall Of New York", () {
-      expect(parse("2019 After The Fall Of New York"), equals({"year": 2019, "title": "After The Fall Of New York"}));
+      expect(parse("2019 After The Fall Of New York"),
+          equals({"year": 2019, "title": "After The Fall Of New York"}));
     });
     test("BDRip", () {
       expect(parse("BDRip"), equals({"source": "BDRip", "title": ""}));
@@ -62,10 +100,22 @@ void main() {
       expect(parse("GHOULS"), equals({"title": "GHOULS"}));
     });
     test("Ghost In The Shell 2017 720p HC HDRip X264 AC3-EVO", () {
-      expect(parse("Ghost In The Shell 2017 720p HC HDRip X264 AC3-EVO"), equals({"resolution": "720p", "year": 2017, "hardcoded": true, "source": "HDRip", "codec": "x264", "audio": "ac3", "group": "EVO", "title": "Ghost In The Shell"}));
+      expect(
+          parse("Ghost In The Shell 2017 720p HC HDRip X264 AC3-EVO"),
+          equals({
+            "resolution": "720p",
+            "year": 2017,
+            "hardcoded": true,
+            "source": "HDRip",
+            "codec": "x264",
+            "audio": "ac3",
+            "group": "EVO",
+            "title": "Ghost In The Shell"
+          }));
     });
     test("Ghost In The Shell", () {
-      expect(parse("Ghost In The Shell"), equals({"title": "Ghost In The Shell"}));
+      expect(
+          parse("Ghost In The Shell"), equals({"title": "Ghost In The Shell"}));
     });
     test("HDRip", () {
       expect(parse("HDRip"), equals({"source": "HDRip", "title": ""}));
@@ -74,7 +124,16 @@ void main() {
       expect(parse("EVO"), equals({"title": "EVO"}));
     });
     test("Rogue One 2016 1080p BluRay x264-SPARKS", () {
-      expect(parse("Rogue One 2016 1080p BluRay x264-SPARKS"), equals({"resolution": "1080p", "year": 2016, "source": "BluRay", "codec": "x264", "group": "SPARKS", "title": "Rogue One"}));
+      expect(
+          parse("Rogue One 2016 1080p BluRay x264-SPARKS"),
+          equals({
+            "resolution": "1080p",
+            "year": 2016,
+            "source": "BluRay",
+            "codec": "x264",
+            "group": "SPARKS",
+            "title": "Rogue One"
+          }));
     });
     test("Rogue One", () {
       expect(parse("Rogue One"), equals({"title": "Rogue One"}));
@@ -83,7 +142,17 @@ void main() {
       expect(parse("SPARKS"), equals({"title": "SPARKS"}));
     });
     test("Desperation 2006 Multi Pal DvdR9-TBW1973", () {
-      expect(parse("Desperation 2006 Multi Pal DvdR9-TBW1973"), equals({"year": 2006, "region": "R9", "source": "DVD", "group": "TBW1973", "languages": ["multi audio"], "dubbed": true, "title": "Desperation"}));
+      expect(
+          parse("Desperation 2006 Multi Pal DvdR9-TBW1973"),
+          equals({
+            "year": 2006,
+            "region": "R9",
+            "source": "DVD",
+            "group": "TBW1973",
+            "languages": ["multi audio"],
+            "dubbed": true,
+            "title": "Desperation"
+          }));
     });
     test("Desperation", () {
       expect(parse("Desperation"), equals({"title": "Desperation"}));
@@ -98,7 +167,8 @@ void main() {
       expect(parse("TBW1973"), equals({"year": 1973, "title": "TBW"}));
     });
     test("Maman, j'ai raté l'avion", () {
-      expect(parse("Maman, j'ai raté l'avion"), equals({"title": "Maman, j'ai raté l'avion"}));
+      expect(parse("Maman, j'ai raté l'avion"),
+          equals({"title": "Maman, j'ai raté l'avion"}));
     });
     test("x265", () {
       expect(parse("x265"), equals({"codec": "x265", "title": ""}));
@@ -107,7 +177,14 @@ void main() {
       expect(parse("HTG"), equals({"title": "HTG"}));
     });
     test("Game of Thrones - The Complete Season 3 [HDTV]", () {
-      expect(parse("Game of Thrones - The Complete Season 3 [HDTV]"), equals({"source": "HDTV", "seasons": [3], "season": 3, "title": "Game of Thrones"}));
+      expect(
+          parse("Game of Thrones - The Complete Season 3 [HDTV]"),
+          equals({
+            "source": "HDTV",
+            "seasons": [3],
+            "season": 3,
+            "title": "Game of Thrones"
+          }));
     });
     test("Game of Thrones", () {
       expect(parse("Game of Thrones"), equals({"title": "Game of Thrones"}));
@@ -116,13 +193,27 @@ void main() {
       expect(parse("HDTV"), equals({"source": "HDTV", "title": ""}));
     });
     test("The Sopranos: The Complete Series (Season 1,2,3,4,5&6) + Extras", () {
-      expect(parse("The Sopranos: The Complete Series (Season 1,2,3,4,5&6) + Extras"), equals({"seasons": [1, 2, 3, 4, 5, 6], "complete": true, "title": "The Sopranos"}));
+      expect(
+          parse(
+              "The Sopranos: The Complete Series (Season 1,2,3,4,5&6) + Extras"),
+          equals({
+            "seasons": [1, 2, 3, 4, 5, 6],
+            "complete": true,
+            "title": "The Sopranos"
+          }));
     });
     test("The Sopranos", () {
       expect(parse("The Sopranos"), equals({"title": "The Sopranos"}));
     });
     test("Skins Season S01-S07 COMPLETE UK Soundtrack 720p WEB-DL", () {
-      expect(parse("Skins Season S01-S07 COMPLETE UK Soundtrack 720p WEB-DL"), equals({"resolution": "720p", "source": "WEB-DL", "seasons": [1, 2, 3, 4, 5, 6, 7], "title": "Skins"}));
+      expect(
+          parse("Skins Season S01-S07 COMPLETE UK Soundtrack 720p WEB-DL"),
+          equals({
+            "resolution": "720p",
+            "source": "WEB-DL",
+            "seasons": [1, 2, 3, 4, 5, 6, 7],
+            "title": "Skins"
+          }));
     });
     test("Skins", () {
       expect(parse("Skins"), equals({"title": "Skins"}));
@@ -131,7 +222,16 @@ void main() {
       expect(parse("WEB-DL"), equals({"source": "WEB-DL", "title": ""}));
     });
     test("Futurama.COMPLETE.S01-S07.720p.BluRay.x265-HETeam", () {
-      expect(parse("Futurama.COMPLETE.S01-S07.720p.BluRay.x265-HETeam"), equals({"resolution": "720p", "source": "BluRay", "codec": "x265", "group": "HETeam", "seasons": [1, 2, 3, 4, 5, 6, 7], "title": "Futurama"}));
+      expect(
+          parse("Futurama.COMPLETE.S01-S07.720p.BluRay.x265-HETeam"),
+          equals({
+            "resolution": "720p",
+            "source": "BluRay",
+            "codec": "x265",
+            "group": "HETeam",
+            "seasons": [1, 2, 3, 4, 5, 6, 7],
+            "title": "Futurama"
+          }));
     });
     test("Futurama", () {
       expect(parse("Futurama"), equals({"title": "Futurama"}));
@@ -140,7 +240,17 @@ void main() {
       expect(parse("HETeam"), equals({"title": "HETeam"}));
     });
     test("You.[Uncut].S01.SweSub.1080p.x264-Justiso", () {
-      expect(parse("You.[Uncut].S01.SweSub.1080p.x264-Justiso"), equals({"resolution": "1080p", "codec": "x264", "group": "Justiso", "seasons": [1], "season": 1, "languages": ["swedish"], "title": "You"}));
+      expect(
+          parse("You.[Uncut].S01.SweSub.1080p.x264-Justiso"),
+          equals({
+            "resolution": "1080p",
+            "codec": "x264",
+            "group": "Justiso",
+            "seasons": [1],
+            "season": 1,
+            "languages": ["swedish"],
+            "title": "You"
+          }));
     });
     test("You", () {
       expect(parse("You"), equals({"title": "You"}));
@@ -152,28 +262,68 @@ void main() {
       expect(parse("Stephen Colbert"), equals({"title": "Stephen Colbert"}));
     });
     test("House MD Season 7 Complete MKV", () {
-      expect(parse("House MD Season 7 Complete MKV"), equals({"container": "mkv", "seasons": [7], "season": 7, "title": "House MD"}));
+      expect(
+          parse("House MD Season 7 Complete MKV"),
+          equals({
+            "container": "mkv",
+            "seasons": [7],
+            "season": 7,
+            "title": "House MD"
+          }));
     });
     test("House MD", () {
       expect(parse("House MD"), equals({"title": "House MD"}));
     });
     test("2008 The Incredible Hulk Feature Film.mp4", () {
-      expect(parse("2008 The Incredible Hulk Feature Film.mp4"), equals({"year": 2008, "container": "mp4", "extension": "mp4", "title": "The Incredible Hulk Feature Film"}));
+      expect(
+          parse("2008 The Incredible Hulk Feature Film.mp4"),
+          equals({
+            "year": 2008,
+            "container": "mp4",
+            "extension": "mp4",
+            "title": "The Incredible Hulk Feature Film"
+          }));
     });
     test("The Incredible Hulk Feature Film", () {
-      expect(parse("The Incredible Hulk Feature Film"), equals({"title": "The Incredible Hulk Feature Film"}));
+      expect(parse("The Incredible Hulk Feature Film"),
+          equals({"title": "The Incredible Hulk Feature Film"}));
     });
-    test("【4月/悠哈璃羽字幕社】[UHA-WINGS][不要输！恶之军团][Makeruna!! Aku no Gundan!][04][1080p AVC_AAC][简繁外挂][sc_tc]", () {
-      expect(parse("【4月/悠哈璃羽字幕社】[UHA-WINGS][不要输！恶之军团][Makeruna!! Aku no Gundan!][04][1080p AVC_AAC][简繁外挂][sc_tc]"), equals({"resolution": "1080p", "codec": "avc", "audio": "aac", "episodes": [4], "episode": 4, "title": "Makeruna!! Aku no Gundan!"}));
+    test(
+        "【4月/悠哈璃羽字幕社】[UHA-WINGS][不要输！恶之军团][Makeruna!! Aku no Gundan!][04][1080p AVC_AAC][简繁外挂][sc_tc]",
+        () {
+      expect(
+          parse(
+              "【4月/悠哈璃羽字幕社】[UHA-WINGS][不要输！恶之军团][Makeruna!! Aku no Gundan!][04][1080p AVC_AAC][简繁外挂][sc_tc]"),
+          equals({
+            "resolution": "1080p",
+            "codec": "avc",
+            "audio": "aac",
+            "episodes": [4],
+            "episode": 4,
+            "title": "Makeruna!! Aku no Gundan!"
+          }));
     });
     test("Makeruna!! Aku no Gundan!", () {
-      expect(parse("Makeruna!! Aku no Gundan!"), equals({"title": "Makeruna!! Aku no Gundan!"}));
+      expect(parse("Makeruna!! Aku no Gundan!"),
+          equals({"title": "Makeruna!! Aku no Gundan!"}));
     });
     test("avc", () {
       expect(parse("avc"), equals({"codec": "avc", "title": ""}));
     });
-    test("[GM-Team][国漫][西行纪之集结篇][The Westward Ⅱ][2019][17][AVC][GB][1080P]", () {
-      expect(parse("[GM-Team][国漫][西行纪之集结篇][The Westward Ⅱ][2019][17][AVC][GB][1080P]"), equals({"resolution": "1080p", "year": 2019, "codec": "avc", "episodes": [17], "episode": 17, "group": "GM-Team", "title": "The Westward Ⅱ"}));
+    test("[GM-Team][国漫][西行纪之集结篇][The Westward Ⅱ][2019][17][AVC][GB][1080P]",
+        () {
+      expect(
+          parse(
+              "[GM-Team][国漫][西行纪之集结篇][The Westward Ⅱ][2019][17][AVC][GB][1080P]"),
+          equals({
+            "resolution": "1080p",
+            "year": 2019,
+            "codec": "avc",
+            "episodes": [17],
+            "episode": 17,
+            "group": "GM-Team",
+            "title": "The Westward Ⅱ"
+          }));
     });
     test("The Westward Ⅱ", () {
       expect(parse("The Westward Ⅱ"), equals({"title": "The Westward Ⅱ"}));
@@ -181,8 +331,22 @@ void main() {
     test("GM-Team", () {
       expect(parse("GM-Team"), equals({"group": "Team", "title": "GM"}));
     });
-    test("Черное зеркало / Black Mirror / Сезон 4 / Серии 1-6 (6) [2017, США, WEBRip 1080p] MVO + Eng Sub", () {
-      expect(parse("Черное зеркало / Black Mirror / Сезон 4 / Серии 1-6 (6) [2017, США, WEBRip 1080p] MVO + Eng Sub"), equals({"resolution": "1080p", "year": 2017, "source": "WEBRip", "seasons": [4], "season": 4, "episodes": [1, 2, 3, 4, 5, 6], "languages": ["english"], "title": "Black Mirror"}));
+    test(
+        "Черное зеркало / Black Mirror / Сезон 4 / Серии 1-6 (6) [2017, США, WEBRip 1080p] MVO + Eng Sub",
+        () {
+      expect(
+          parse(
+              "Черное зеркало / Black Mirror / Сезон 4 / Серии 1-6 (6) [2017, США, WEBRip 1080p] MVO + Eng Sub"),
+          equals({
+            "resolution": "1080p",
+            "year": 2017,
+            "source": "WEBRip",
+            "seasons": [4],
+            "season": 4,
+            "episodes": [1, 2, 3, 4, 5, 6],
+            "languages": ["english"],
+            "title": "Black Mirror"
+          }));
     });
     test("Black Mirror", () {
       expect(parse("Black Mirror"), equals({"title": "Black Mirror"}));
@@ -190,17 +354,47 @@ void main() {
     test("WEBRip", () {
       expect(parse("WEBRip"), equals({"source": "WEBRip", "title": ""}));
     });
-    test("[neoHEVC] Student Council's Discretion / Seitokai no Ichizon [Season 1] [BD 1080p x265 HEVC AAC]", () {
-      expect(parse("[neoHEVC] Student Council's Discretion / Seitokai no Ichizon [Season 1] [BD 1080p x265 HEVC AAC]"), equals({"resolution": "1080p", "source": "BDRip", "codec": "hevc", "audio": "aac", "seasons": [1], "season": 1, "group": "neoHEVC", "title": "Student Council's Discretion / Seitokai no Ichizon"}));
+    test(
+        "[neoHEVC] Student Council's Discretion / Seitokai no Ichizon [Season 1] [BD 1080p x265 HEVC AAC]",
+        () {
+      expect(
+          parse(
+              "[neoHEVC] Student Council's Discretion / Seitokai no Ichizon [Season 1] [BD 1080p x265 HEVC AAC]"),
+          equals({
+            "resolution": "1080p",
+            "source": "BDRip",
+            "codec": "hevc",
+            "audio": "aac",
+            "seasons": [1],
+            "season": 1,
+            "group": "neoHEVC",
+            "title": "Student Council's Discretion / Seitokai no Ichizon"
+          }));
     });
     test("Student Council's Discretion / Seitokai no Ichizon", () {
-      expect(parse("Student Council's Discretion / Seitokai no Ichizon"), equals({"title": "Student Council's Discretion / Seitokai no Ichizon"}));
+      expect(
+          parse("Student Council's Discretion / Seitokai no Ichizon"),
+          equals(
+              {"title": "Student Council's Discretion / Seitokai no Ichizon"}));
     });
     test("neoHEVC", () {
       expect(parse("neoHEVC"), equals({"title": "neoHEVC"}));
     });
     test("[Commie] Chihayafuru 3 - 21 [BD 720p AAC] [5F1911ED].mkv", () {
-      expect(parse("[Commie] Chihayafuru 3 - 21 [BD 720p AAC] [5F1911ED].mkv"), equals({"episodeCode": "5F1911ED", "resolution": "720p", "source": "BDRip", "audio": "aac", "container": "mkv", "episodes": [21], "episode": 21, "group": "Commie", "extension": "mkv", "title": "Chihayafuru 3"}));
+      expect(
+          parse("[Commie] Chihayafuru 3 - 21 [BD 720p AAC] [5F1911ED].mkv"),
+          equals({
+            "episodeCode": "5F1911ED",
+            "resolution": "720p",
+            "source": "BDRip",
+            "audio": "aac",
+            "container": "mkv",
+            "episodes": [21],
+            "episode": 21,
+            "group": "Commie",
+            "extension": "mkv",
+            "title": "Chihayafuru 3"
+          }));
     });
     test("Chihayafuru 3", () {
       expect(parse("Chihayafuru 3"), equals({"title": "Chihayafuru 3"}));
@@ -212,13 +406,33 @@ void main() {
       expect(parse("Commie"), equals({"title": "Commie"}));
     });
     test("[DVDRip-ITA]The Fast and the Furious: Tokyo Drift [CR-Bt]", () {
-      expect(parse("[DVDRip-ITA]The Fast and the Furious: Tokyo Drift [CR-Bt]"), equals({"source": "DVDRip", "languages": ["italian"], "title": "The Fast and the Furious: Tokyo Drift"}));
+      expect(
+          parse("[DVDRip-ITA]The Fast and the Furious: Tokyo Drift [CR-Bt]"),
+          equals({
+            "source": "DVDRip",
+            "languages": ["italian"],
+            "title": "The Fast and the Furious: Tokyo Drift"
+          }));
     });
     test("The Fast and the Furious: Tokyo Drift", () {
-      expect(parse("The Fast and the Furious: Tokyo Drift"), equals({"title": "The Fast and the Furious: Tokyo Drift"}));
+      expect(parse("The Fast and the Furious: Tokyo Drift"),
+          equals({"title": "The Fast and the Furious: Tokyo Drift"}));
     });
-    test("[BluRay Rip 720p ITA AC3 - ENG AC3 SUB] Hostel[2005]-LIFE[ultimafrontiera]", () {
-      expect(parse("[BluRay Rip 720p ITA AC3 - ENG AC3 SUB] Hostel[2005]-LIFE[ultimafrontiera]"), equals({"resolution": "720p", "year": 2005, "source": "BRRip", "audio": "ac3", "group": "LIFE", "languages": ["english", "italian"], "title": "Hostel"}));
+    test(
+        "[BluRay Rip 720p ITA AC3 - ENG AC3 SUB] Hostel[2005]-LIFE[ultimafrontiera]",
+        () {
+      expect(
+          parse(
+              "[BluRay Rip 720p ITA AC3 - ENG AC3 SUB] Hostel[2005]-LIFE[ultimafrontiera]"),
+          equals({
+            "resolution": "720p",
+            "year": 2005,
+            "source": "BRRip",
+            "audio": "ac3",
+            "group": "LIFE",
+            "languages": ["english", "italian"],
+            "title": "Hostel"
+          }));
     });
     test("Hostel", () {
       expect(parse("Hostel"), equals({"title": "Hostel"}));
@@ -226,26 +440,64 @@ void main() {
     test("LIFE", () {
       expect(parse("LIFE"), equals({"title": "LIFE"}));
     });
-    test("[OFFICIAL ENG SUB] Soul Land Episode 121-125 [1080p][Soft Sub][Web-DL][Douluo Dalu][斗罗大陆]", () {
-      expect(parse("[OFFICIAL ENG SUB] Soul Land Episode 121-125 [1080p][Soft Sub][Web-DL][Douluo Dalu][斗罗大陆]"), equals({"resolution": "1080p", "source": "WEB-DL", "episodes": [121, 122, 123, 124, 125], "languages": ["english"], "title": "Soul Land"}));
+    test(
+        "[OFFICIAL ENG SUB] Soul Land Episode 121-125 [1080p][Soft Sub][Web-DL][Douluo Dalu][斗罗大陆]",
+        () {
+      expect(
+          parse(
+              "[OFFICIAL ENG SUB] Soul Land Episode 121-125 [1080p][Soft Sub][Web-DL][Douluo Dalu][斗罗大陆]"),
+          equals({
+            "resolution": "1080p",
+            "source": "WEB-DL",
+            "episodes": [121, 122, 123, 124, 125],
+            "languages": ["english"],
+            "title": "Soul Land"
+          }));
     });
     test("Soul Land", () {
       expect(parse("Soul Land"), equals({"title": "Soul Land"}));
     });
     test("[720p] The God of Highschool Season 1", () {
-      expect(parse("[720p] The God of Highschool Season 1"), equals({"resolution": "720p", "seasons": [1], "season": 1, "title": "The God of Highschool"}));
+      expect(
+          parse("[720p] The God of Highschool Season 1"),
+          equals({
+            "resolution": "720p",
+            "seasons": [1],
+            "season": 1,
+            "title": "The God of Highschool"
+          }));
     });
     test("The God of Highschool", () {
-      expect(parse("The God of Highschool"), equals({"title": "The God of Highschool"}));
+      expect(parse("The God of Highschool"),
+          equals({"title": "The God of Highschool"}));
     });
     test("Heidi Audio Latino DVDRip [cap. 3 Al 18]", () {
-      expect(parse("Heidi Audio Latino DVDRip [cap. 3 Al 18]"), equals({"source": "DVDRip", "episodes": [3], "episode": 3, "languages": ["latino"], "title": "Heidi"}));
+      expect(
+          parse("Heidi Audio Latino DVDRip [cap. 3 Al 18]"),
+          equals({
+            "source": "DVDRip",
+            "episodes": [3],
+            "episode": 3,
+            "languages": ["latino"],
+            "title": "Heidi"
+          }));
     });
     test("Heidi", () {
       expect(parse("Heidi"), equals({"title": "Heidi"}));
     });
     test("Sprint.2024.S01.COMPLETE.1080p.WEB.h264-EDITH[TGx]", () {
-      expect(parse("Sprint.2024.S01.COMPLETE.1080p.WEB.h264-EDITH[TGx]"), equals({"resolution": "1080p", "year": 2024, "codec": "h264", "group": "EDITH", "seasons": [1], "season": 1, "source": "WEB", "title": "Sprint"}));
+      expect(
+          parse("Sprint.2024.S01.COMPLETE.1080p.WEB.h264-EDITH[TGx]"),
+          equals({
+            "resolution": "1080p",
+            "year": 2024,
+            "codec": "h264",
+            "group": "EDITH",
+            "seasons": [1],
+            "season": 1,
+            "source": "WEB",
+            "title": "Sprint"
+          }));
     });
     test("Sprint", () {
       expect(parse("Sprint"), equals({"title": "Sprint"}));
@@ -257,13 +509,34 @@ void main() {
       expect(parse("EDITH"), equals({"title": "EDITH"}));
     });
     test("High Heat *2022* [BRRip.XviD] Lektor PL", () {
-      expect(parse("High Heat *2022* [BRRip.XviD] Lektor PL"), equals({"year": 2022, "source": "BRRip", "codec": "xvid", "languages": ["polish"], "title": "High Heat"}));
+      expect(
+          parse("High Heat *2022* [BRRip.XviD] Lektor PL"),
+          equals({
+            "year": 2022,
+            "source": "BRRip",
+            "codec": "xvid",
+            "languages": ["polish"],
+            "title": "High Heat"
+          }));
     });
     test("High Heat", () {
       expect(parse("High Heat"), equals({"title": "High Heat"}));
     });
-    test("Ghost Busters *1984-2021* [720p] [BDRip] [AC-3] [XviD] [Lektor + Dubbing PL] [DYZIO]", () {
-      expect(parse("Ghost Busters *1984-2021* [720p] [BDRip] [AC-3] [XviD] [Lektor + Dubbing PL] [DYZIO]"), equals({"resolution": "720p", "year": "1984-2021", "source": "BDRip", "codec": "xvid", "audio": "ac3", "languages": ["polish"], "title": "Ghost Busters"}));
+    test(
+        "Ghost Busters *1984-2021* [720p] [BDRip] [AC-3] [XviD] [Lektor + Dubbing PL] [DYZIO]",
+        () {
+      expect(
+          parse(
+              "Ghost Busters *1984-2021* [720p] [BDRip] [AC-3] [XviD] [Lektor + Dubbing PL] [DYZIO]"),
+          equals({
+            "resolution": "720p",
+            "year": "1984-2021",
+            "source": "BDRip",
+            "codec": "xvid",
+            "audio": "ac3",
+            "languages": ["polish"],
+            "title": "Ghost Busters"
+          }));
     });
     test("Ghost Busters", () {
       expect(parse("Ghost Busters"), equals({"title": "Ghost Busters"}));
@@ -272,7 +545,17 @@ void main() {
       expect(parse("1984-2021"), equals({"year": "1984-2021", "title": ""}));
     });
     test("20-20.2024.11.15.Fatal.Disguise.XviD-AFG[EZTVx.to].avi", () {
-      expect(parse("20-20.2024.11.15.Fatal.Disguise.XviD-AFG[EZTVx.to].avi"), equals({"date": "2024-11-15", "source": "XviD", "codec": "xvid", "group": "AFG", "container": "avi", "extension": "avi", "title": "20-20"}));
+      expect(
+          parse("20-20.2024.11.15.Fatal.Disguise.XviD-AFG[EZTVx.to].avi"),
+          equals({
+            "date": "2024-11-15",
+            "source": "XviD",
+            "codec": "xvid",
+            "group": "AFG",
+            "container": "avi",
+            "extension": "avi",
+            "title": "20-20"
+          }));
     });
     test("20-20", () {
       expect(parse("20-20"), equals({"title": "20-20"}));
@@ -281,7 +564,8 @@ void main() {
       expect(parse("2024-11-15"), equals({"date": "2024-11-15", "title": ""}));
     });
     test("XviD", () {
-      expect(parse("XviD"), equals({"source": "XviD", "codec": "xvid", "title": ""}));
+      expect(parse("XviD"),
+          equals({"source": "XviD", "codec": "xvid", "title": ""}));
     });
     test("AFG", () {
       expect(parse("AFG"), equals({"title": "AFG"}));

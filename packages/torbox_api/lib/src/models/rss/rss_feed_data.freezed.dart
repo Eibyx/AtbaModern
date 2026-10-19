@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$RssFeedData {
 
  int get id; String get createdAt; String get lastChecked; String get authId; String get name; String get url;/// The site the feed originates from.
- String? get source; String? get sourceName; String? get doRegex; String? get dontRegex; String? get status; int? get scanInterval; int? get dontOlderThan; String? get statusMessage; String? get type; int? get torrentSeeding; String? get state;
+ String? get source; String? get sourceName; String? get doRegex; String? get dontRegex; String? get status; int? get scanInterval; int? get dontOlderThan; String? get statusMessage; String? get type; int? get torrentSeeding; String? get state; bool? get passCheck;
 /// Create a copy of RssFeedData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $RssFeedDataCopyWith<RssFeedData> get copyWith => _$RssFeedDataCopyWithImpl<RssF
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RssFeedData&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastChecked, lastChecked) || other.lastChecked == lastChecked)&&(identical(other.authId, authId) || other.authId == authId)&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceName, sourceName) || other.sourceName == sourceName)&&(identical(other.doRegex, doRegex) || other.doRegex == doRegex)&&(identical(other.dontRegex, dontRegex) || other.dontRegex == dontRegex)&&(identical(other.status, status) || other.status == status)&&(identical(other.scanInterval, scanInterval) || other.scanInterval == scanInterval)&&(identical(other.dontOlderThan, dontOlderThan) || other.dontOlderThan == dontOlderThan)&&(identical(other.statusMessage, statusMessage) || other.statusMessage == statusMessage)&&(identical(other.type, type) || other.type == type)&&(identical(other.torrentSeeding, torrentSeeding) || other.torrentSeeding == torrentSeeding)&&(identical(other.state, state) || other.state == state));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RssFeedData&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastChecked, lastChecked) || other.lastChecked == lastChecked)&&(identical(other.authId, authId) || other.authId == authId)&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceName, sourceName) || other.sourceName == sourceName)&&(identical(other.doRegex, doRegex) || other.doRegex == doRegex)&&(identical(other.dontRegex, dontRegex) || other.dontRegex == dontRegex)&&(identical(other.status, status) || other.status == status)&&(identical(other.scanInterval, scanInterval) || other.scanInterval == scanInterval)&&(identical(other.dontOlderThan, dontOlderThan) || other.dontOlderThan == dontOlderThan)&&(identical(other.statusMessage, statusMessage) || other.statusMessage == statusMessage)&&(identical(other.type, type) || other.type == type)&&(identical(other.torrentSeeding, torrentSeeding) || other.torrentSeeding == torrentSeeding)&&(identical(other.state, state) || other.state == state)&&(identical(other.passCheck, passCheck) || other.passCheck == passCheck));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,createdAt,lastChecked,authId,name,url,source,sourceName,doRegex,dontRegex,status,scanInterval,dontOlderThan,statusMessage,type,torrentSeeding,state);
+int get hashCode => Object.hash(runtimeType,id,createdAt,lastChecked,authId,name,url,source,sourceName,doRegex,dontRegex,status,scanInterval,dontOlderThan,statusMessage,type,torrentSeeding,state,passCheck);
 
 @override
 String toString() {
-  return 'RssFeedData(id: $id, createdAt: $createdAt, lastChecked: $lastChecked, authId: $authId, name: $name, url: $url, source: $source, sourceName: $sourceName, doRegex: $doRegex, dontRegex: $dontRegex, status: $status, scanInterval: $scanInterval, dontOlderThan: $dontOlderThan, statusMessage: $statusMessage, type: $type, torrentSeeding: $torrentSeeding, state: $state)';
+  return 'RssFeedData(id: $id, createdAt: $createdAt, lastChecked: $lastChecked, authId: $authId, name: $name, url: $url, source: $source, sourceName: $sourceName, doRegex: $doRegex, dontRegex: $dontRegex, status: $status, scanInterval: $scanInterval, dontOlderThan: $dontOlderThan, statusMessage: $statusMessage, type: $type, torrentSeeding: $torrentSeeding, state: $state, passCheck: $passCheck)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $RssFeedDataCopyWith<$Res>  {
   factory $RssFeedDataCopyWith(RssFeedData value, $Res Function(RssFeedData) _then) = _$RssFeedDataCopyWithImpl;
 @useResult
 $Res call({
- int id, String createdAt, String lastChecked, String authId, String name, String url, String? source, String? sourceName, String? doRegex, String? dontRegex, String? status, int? scanInterval, int? dontOlderThan, String? statusMessage, String? type, int? torrentSeeding, String? state
+ int id, String createdAt, String lastChecked, String authId, String name, String url, String? source, String? sourceName, String? doRegex, String? dontRegex, String? status, int? scanInterval, int? dontOlderThan, String? statusMessage, String? type, int? torrentSeeding, String? state, bool? passCheck
 });
 
 
@@ -66,7 +66,7 @@ class _$RssFeedDataCopyWithImpl<$Res>
 
 /// Create a copy of RssFeedData
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? createdAt = null,Object? lastChecked = null,Object? authId = null,Object? name = null,Object? url = null,Object? source = freezed,Object? sourceName = freezed,Object? doRegex = freezed,Object? dontRegex = freezed,Object? status = freezed,Object? scanInterval = freezed,Object? dontOlderThan = freezed,Object? statusMessage = freezed,Object? type = freezed,Object? torrentSeeding = freezed,Object? state = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? createdAt = null,Object? lastChecked = null,Object? authId = null,Object? name = null,Object? url = null,Object? source = freezed,Object? sourceName = freezed,Object? doRegex = freezed,Object? dontRegex = freezed,Object? status = freezed,Object? scanInterval = freezed,Object? dontOlderThan = freezed,Object? statusMessage = freezed,Object? type = freezed,Object? torrentSeeding = freezed,Object? state = freezed,Object? passCheck = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -85,7 +85,8 @@ as int?,statusMessage: freezed == statusMessage ? _self.statusMessage : statusMe
 as String?,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String?,torrentSeeding: freezed == torrentSeeding ? _self.torrentSeeding : torrentSeeding // ignore: cast_nullable_to_non_nullable
 as int?,state: freezed == state ? _self.state : state // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,passCheck: freezed == passCheck ? _self.passCheck : passCheck // ignore: cast_nullable_to_non_nullable
+as bool?,
   ));
 }
 
@@ -170,10 +171,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String createdAt,  String lastChecked,  String authId,  String name,  String url,  String? source,  String? sourceName,  String? doRegex,  String? dontRegex,  String? status,  int? scanInterval,  int? dontOlderThan,  String? statusMessage,  String? type,  int? torrentSeeding,  String? state)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String createdAt,  String lastChecked,  String authId,  String name,  String url,  String? source,  String? sourceName,  String? doRegex,  String? dontRegex,  String? status,  int? scanInterval,  int? dontOlderThan,  String? statusMessage,  String? type,  int? torrentSeeding,  String? state,  bool? passCheck)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RssFeedData() when $default != null:
-return $default(_that.id,_that.createdAt,_that.lastChecked,_that.authId,_that.name,_that.url,_that.source,_that.sourceName,_that.doRegex,_that.dontRegex,_that.status,_that.scanInterval,_that.dontOlderThan,_that.statusMessage,_that.type,_that.torrentSeeding,_that.state);case _:
+return $default(_that.id,_that.createdAt,_that.lastChecked,_that.authId,_that.name,_that.url,_that.source,_that.sourceName,_that.doRegex,_that.dontRegex,_that.status,_that.scanInterval,_that.dontOlderThan,_that.statusMessage,_that.type,_that.torrentSeeding,_that.state,_that.passCheck);case _:
   return orElse();
 
 }
@@ -191,10 +192,10 @@ return $default(_that.id,_that.createdAt,_that.lastChecked,_that.authId,_that.na
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String createdAt,  String lastChecked,  String authId,  String name,  String url,  String? source,  String? sourceName,  String? doRegex,  String? dontRegex,  String? status,  int? scanInterval,  int? dontOlderThan,  String? statusMessage,  String? type,  int? torrentSeeding,  String? state)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String createdAt,  String lastChecked,  String authId,  String name,  String url,  String? source,  String? sourceName,  String? doRegex,  String? dontRegex,  String? status,  int? scanInterval,  int? dontOlderThan,  String? statusMessage,  String? type,  int? torrentSeeding,  String? state,  bool? passCheck)  $default,) {final _that = this;
 switch (_that) {
 case _RssFeedData():
-return $default(_that.id,_that.createdAt,_that.lastChecked,_that.authId,_that.name,_that.url,_that.source,_that.sourceName,_that.doRegex,_that.dontRegex,_that.status,_that.scanInterval,_that.dontOlderThan,_that.statusMessage,_that.type,_that.torrentSeeding,_that.state);case _:
+return $default(_that.id,_that.createdAt,_that.lastChecked,_that.authId,_that.name,_that.url,_that.source,_that.sourceName,_that.doRegex,_that.dontRegex,_that.status,_that.scanInterval,_that.dontOlderThan,_that.statusMessage,_that.type,_that.torrentSeeding,_that.state,_that.passCheck);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -211,10 +212,10 @@ return $default(_that.id,_that.createdAt,_that.lastChecked,_that.authId,_that.na
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String createdAt,  String lastChecked,  String authId,  String name,  String url,  String? source,  String? sourceName,  String? doRegex,  String? dontRegex,  String? status,  int? scanInterval,  int? dontOlderThan,  String? statusMessage,  String? type,  int? torrentSeeding,  String? state)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String createdAt,  String lastChecked,  String authId,  String name,  String url,  String? source,  String? sourceName,  String? doRegex,  String? dontRegex,  String? status,  int? scanInterval,  int? dontOlderThan,  String? statusMessage,  String? type,  int? torrentSeeding,  String? state,  bool? passCheck)?  $default,) {final _that = this;
 switch (_that) {
 case _RssFeedData() when $default != null:
-return $default(_that.id,_that.createdAt,_that.lastChecked,_that.authId,_that.name,_that.url,_that.source,_that.sourceName,_that.doRegex,_that.dontRegex,_that.status,_that.scanInterval,_that.dontOlderThan,_that.statusMessage,_that.type,_that.torrentSeeding,_that.state);case _:
+return $default(_that.id,_that.createdAt,_that.lastChecked,_that.authId,_that.name,_that.url,_that.source,_that.sourceName,_that.doRegex,_that.dontRegex,_that.status,_that.scanInterval,_that.dontOlderThan,_that.statusMessage,_that.type,_that.torrentSeeding,_that.state,_that.passCheck);case _:
   return null;
 
 }
@@ -226,7 +227,7 @@ return $default(_that.id,_that.createdAt,_that.lastChecked,_that.authId,_that.na
 @JsonSerializable()
 
 class _RssFeedData implements RssFeedData {
-  const _RssFeedData({required this.id, required this.createdAt, required this.lastChecked, required this.authId, required this.name, required this.url, this.source, this.sourceName, this.doRegex, this.dontRegex, this.status, this.scanInterval, this.dontOlderThan, this.statusMessage, this.type, this.torrentSeeding, this.state});
+  const _RssFeedData({required this.id, required this.createdAt, required this.lastChecked, required this.authId, required this.name, required this.url, this.source, this.sourceName, this.doRegex, this.dontRegex, this.status, this.scanInterval, this.dontOlderThan, this.statusMessage, this.type, this.torrentSeeding, this.state, this.passCheck});
   factory _RssFeedData.fromJson(Map<String, dynamic> json) => _$RssFeedDataFromJson(json);
 
 @override final  int id;
@@ -247,6 +248,7 @@ class _RssFeedData implements RssFeedData {
 @override final  String? type;
 @override final  int? torrentSeeding;
 @override final  String? state;
+@override final  bool? passCheck;
 
 /// Create a copy of RssFeedData
 /// with the given fields replaced by the non-null parameter values.
@@ -261,16 +263,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RssFeedData&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastChecked, lastChecked) || other.lastChecked == lastChecked)&&(identical(other.authId, authId) || other.authId == authId)&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceName, sourceName) || other.sourceName == sourceName)&&(identical(other.doRegex, doRegex) || other.doRegex == doRegex)&&(identical(other.dontRegex, dontRegex) || other.dontRegex == dontRegex)&&(identical(other.status, status) || other.status == status)&&(identical(other.scanInterval, scanInterval) || other.scanInterval == scanInterval)&&(identical(other.dontOlderThan, dontOlderThan) || other.dontOlderThan == dontOlderThan)&&(identical(other.statusMessage, statusMessage) || other.statusMessage == statusMessage)&&(identical(other.type, type) || other.type == type)&&(identical(other.torrentSeeding, torrentSeeding) || other.torrentSeeding == torrentSeeding)&&(identical(other.state, state) || other.state == state));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RssFeedData&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastChecked, lastChecked) || other.lastChecked == lastChecked)&&(identical(other.authId, authId) || other.authId == authId)&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceName, sourceName) || other.sourceName == sourceName)&&(identical(other.doRegex, doRegex) || other.doRegex == doRegex)&&(identical(other.dontRegex, dontRegex) || other.dontRegex == dontRegex)&&(identical(other.status, status) || other.status == status)&&(identical(other.scanInterval, scanInterval) || other.scanInterval == scanInterval)&&(identical(other.dontOlderThan, dontOlderThan) || other.dontOlderThan == dontOlderThan)&&(identical(other.statusMessage, statusMessage) || other.statusMessage == statusMessage)&&(identical(other.type, type) || other.type == type)&&(identical(other.torrentSeeding, torrentSeeding) || other.torrentSeeding == torrentSeeding)&&(identical(other.state, state) || other.state == state)&&(identical(other.passCheck, passCheck) || other.passCheck == passCheck));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,createdAt,lastChecked,authId,name,url,source,sourceName,doRegex,dontRegex,status,scanInterval,dontOlderThan,statusMessage,type,torrentSeeding,state);
+int get hashCode => Object.hash(runtimeType,id,createdAt,lastChecked,authId,name,url,source,sourceName,doRegex,dontRegex,status,scanInterval,dontOlderThan,statusMessage,type,torrentSeeding,state,passCheck);
 
 @override
 String toString() {
-  return 'RssFeedData(id: $id, createdAt: $createdAt, lastChecked: $lastChecked, authId: $authId, name: $name, url: $url, source: $source, sourceName: $sourceName, doRegex: $doRegex, dontRegex: $dontRegex, status: $status, scanInterval: $scanInterval, dontOlderThan: $dontOlderThan, statusMessage: $statusMessage, type: $type, torrentSeeding: $torrentSeeding, state: $state)';
+  return 'RssFeedData(id: $id, createdAt: $createdAt, lastChecked: $lastChecked, authId: $authId, name: $name, url: $url, source: $source, sourceName: $sourceName, doRegex: $doRegex, dontRegex: $dontRegex, status: $status, scanInterval: $scanInterval, dontOlderThan: $dontOlderThan, statusMessage: $statusMessage, type: $type, torrentSeeding: $torrentSeeding, state: $state, passCheck: $passCheck)';
 }
 
 
@@ -281,7 +283,7 @@ abstract mixin class _$RssFeedDataCopyWith<$Res> implements $RssFeedDataCopyWith
   factory _$RssFeedDataCopyWith(_RssFeedData value, $Res Function(_RssFeedData) _then) = __$RssFeedDataCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String createdAt, String lastChecked, String authId, String name, String url, String? source, String? sourceName, String? doRegex, String? dontRegex, String? status, int? scanInterval, int? dontOlderThan, String? statusMessage, String? type, int? torrentSeeding, String? state
+ int id, String createdAt, String lastChecked, String authId, String name, String url, String? source, String? sourceName, String? doRegex, String? dontRegex, String? status, int? scanInterval, int? dontOlderThan, String? statusMessage, String? type, int? torrentSeeding, String? state, bool? passCheck
 });
 
 
@@ -298,7 +300,7 @@ class __$RssFeedDataCopyWithImpl<$Res>
 
 /// Create a copy of RssFeedData
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? createdAt = null,Object? lastChecked = null,Object? authId = null,Object? name = null,Object? url = null,Object? source = freezed,Object? sourceName = freezed,Object? doRegex = freezed,Object? dontRegex = freezed,Object? status = freezed,Object? scanInterval = freezed,Object? dontOlderThan = freezed,Object? statusMessage = freezed,Object? type = freezed,Object? torrentSeeding = freezed,Object? state = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? createdAt = null,Object? lastChecked = null,Object? authId = null,Object? name = null,Object? url = null,Object? source = freezed,Object? sourceName = freezed,Object? doRegex = freezed,Object? dontRegex = freezed,Object? status = freezed,Object? scanInterval = freezed,Object? dontOlderThan = freezed,Object? statusMessage = freezed,Object? type = freezed,Object? torrentSeeding = freezed,Object? state = freezed,Object? passCheck = freezed,}) {
   return _then(_RssFeedData(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -317,7 +319,8 @@ as int?,statusMessage: freezed == statusMessage ? _self.statusMessage : statusMe
 as String?,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String?,torrentSeeding: freezed == torrentSeeding ? _self.torrentSeeding : torrentSeeding // ignore: cast_nullable_to_non_nullable
 as int?,state: freezed == state ? _self.state : state // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,passCheck: freezed == passCheck ? _self.passCheck : passCheck // ignore: cast_nullable_to_non_nullable
+as bool?,
   ));
 }
 

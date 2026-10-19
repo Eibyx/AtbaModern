@@ -21,7 +21,13 @@ import 'src/handlers.dart' as handlers;
 import 'src/parser.dart';
 
 export 'src/js.dart'
-    show escapeLiteral, expandBackreference, jsParseInt, jsSlice, jsTruthy, matchGroup;
+    show
+        escapeLiteral,
+        expandBackreference,
+        jsParseInt,
+        jsSlice,
+        jsTruthy,
+        matchGroup;
 export 'src/moment.dart' show parseWithFormat;
 export 'src/parser.dart'
     show

@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:media_kit/media_kit.dart';
+
 import 'package:atba/config/constants.dart';
 import 'package:atba/screens/video_player_screen/video_player_screen.dart';
 import 'package:flutter/foundation.dart';
@@ -21,6 +23,7 @@ class VideoPlaybackService {
         (kIsWeb || !Platform.isAndroid);
 
     if (useInternalPlayer) {
+      MediaKit.ensureInitialized();
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => VideoPlayerScreen(url: url)),

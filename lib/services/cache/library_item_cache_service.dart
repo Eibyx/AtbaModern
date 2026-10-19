@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:atba/models/library_items/library_item.dart';
 import 'package:atba/models/library_items/queued_torrent.dart';
 import 'package:atba/models/library_items/torrent.dart';
@@ -13,10 +14,15 @@ part 'library_item_cache_service.g.dart';
 @DataClassName('LibraryItemEntry')
 class LibraryItemCache extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get itemId => integer().unique()();
+  IntColumn get itemId => integer()();
   TextColumn get itemType => text()();
   TextColumn get itemJson => text()();
   DateTimeColumn get lastUpdated => dateTime()();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {itemType, itemId},
+  ];
 }
 
 @DriftDatabase(tables: [LibraryItemCache])
@@ -29,16 +35,31 @@ class AppDatabase extends _$AppDatabase {
 
   AppDatabase._internal() : super(connect());
 
+  AppDatabase.forTesting(super.executor);
+
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
-          await m.deleteTable('downloadable_item_cache');
+          // Preserve the old table for recovery rather than deleting user data.
           await m.createTable(libraryItemCache);
+        } else if (from < 3) {
+          // Rebuild transactionally, preserving IDs, JSON and timestamps.
+          // Only the global UNIQUE constraint changes.
+          await transaction(() async {
+            await customStatement(
+              'ALTER TABLE library_item_cache RENAME TO library_item_cache_v2',
+            );
+            await m.createTable(libraryItemCache);
+            await customStatement(
+              'INSERT INTO library_item_cache (id,item_id,item_type,item_json,last_updated) SELECT id,item_id,item_type,item_json,last_updated FROM library_item_cache_v2',
+            );
+            await customStatement('DROP TABLE library_item_cache_v2');
+          });
         }
       },
     );
@@ -54,11 +75,23 @@ class AppDatabase extends _$AppDatabase {
 // }
 
 class LibraryItemCacheService {
-  late AppDatabase _db;
+  final AppDatabase _db;
 
-  LibraryItemCacheService() {
-    _db = AppDatabase();
-  }
+  LibraryItemCacheService({AppDatabase? database})
+    : _db = database ?? AppDatabase();
+
+  Future<void> replaceType<T extends LibraryItem>(List<T> items) =>
+      _db.transaction(() async {
+        await deleteItemByType<T>();
+        await saveItems(items);
+      });
+
+  Future<void> deleteLibraryItems(List<LibraryItem> items) =>
+      _db.transaction(() async {
+        for (final item in items) {
+          await deleteItems([item.id], itemType: _getItemType(item));
+        }
+      });
 
   Future<void> saveItems(List<LibraryItem> items) async {
     await _db.batch((batch) {
@@ -79,9 +112,12 @@ class LibraryItemCacheService {
     });
   }
 
-  Future<List<LibraryItem>> getItems(List<int> ids) async {
+  Future<List<LibraryItem>> getItems(
+    List<int> ids, {
+    required String itemType,
+  }) async {
     final query = _db.select(_db.libraryItemCache)
-      ..where((tbl) => tbl.itemId.isIn(ids));
+      ..where((tbl) => tbl.itemId.isIn(ids) & tbl.itemType.equals(itemType));
     final entries = await query.get();
     return entries
         .map((entry) => _deserializeItem(entry.itemJson, entry.itemType))
@@ -95,9 +131,9 @@ class LibraryItemCacheService {
         .toList();
   }
 
-  Future<void> deleteItems(List<int> ids) async {
+  Future<void> deleteItems(List<int> ids, {required String itemType}) async {
     final query = _db.delete(_db.libraryItemCache)
-      ..where((tbl) => tbl.itemId.isIn(ids));
+      ..where((tbl) => tbl.itemId.isIn(ids) & tbl.itemType.equals(itemType));
     await query.go();
   }
 

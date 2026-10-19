@@ -1,215 +1,281 @@
+import 'dart:async';
+
+import 'package:atba/services/google_drive_session.dart';
 import 'package:atba/services/torbox_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class GoogleDriveIntegrationSection extends StatefulWidget {
   final TorboxAPI apiService;
   final TextEditingController googleTokenController;
-
   const GoogleDriveIntegrationSection({
     super.key,
     required this.apiService,
     required this.googleTokenController,
   });
-
   @override
   State<GoogleDriveIntegrationSection> createState() =>
       _GoogleDriveIntegrationSectionState();
 }
 
 class _GoogleDriveIntegrationSectionState
-    extends State<GoogleDriveIntegrationSection> {
-  String? googleToken;
+    extends State<GoogleDriveIntegrationSection>
+    with WidgetsBindingObserver {
+  Timer? _expiryTimer;
 
   @override
   void initState() {
-    googleToken = widget.apiService.googleToken ?? "";
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _scheduleExpiry();
   }
 
-  void _onTokenChanged(String token) {
-    setState(() {
-      googleToken = token;
+  void _scheduleExpiry() {
+    _expiryTimer?.cancel();
+    final expiry = widget.apiService.googleSession?.expiresAt;
+    if (expiry == null) return;
+    final delay = expiry.difference(DateTime.now());
+    if (delay.isNegative) return;
+    _expiryTimer = Timer(delay + const Duration(milliseconds: 100), () {
+      if (mounted) setState(() {});
     });
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _scheduleExpiry();
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _expiryTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  bool _busy = false;
+  String? _error;
+  static final _oauthUrl = Uri.parse(
+    'https://api.torbox.app/v1/api/integration/oauth/google',
+  );
+
+  Future<void> _save(String value, String expiry) async {
+    if (_busy) return;
+    if (value.trim().isEmpty) {
+      setState(() => _error = 'Introduce una credencial de Google.');
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final uri = Uri.tryParse(value.trim());
+      if (uri?.scheme == 'https' || uri?.scheme == 'http') {
+        final session = GoogleDriveSession.fromCallback(uri!);
+        if (session == null) {
+          throw const FormatException('URL de autorización no válida.');
+        }
+        await widget.apiService.saveGoogleToken(
+          session.accessToken,
+          session.expiresAt?.toIso8601String() ?? '',
+        );
+      } else {
+        await widget.apiService.saveGoogleToken(value, expiry);
+      }
+      widget.googleTokenController.clear();
+      _scheduleExpiry();
+    } on Exception {
+      _error = 'No se pudo guardar la credencial de Google de forma segura.';
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ExpandableSettingsTile(
-      title: "Google Drive",
-      leading: Icon(Icons.drive_file_move),
-      subtitle: (googleToken == null || googleToken!.isEmpty)
-          ? "Not connected"
-          : "Connected",
+    final session = widget.apiService.googleSession;
+    final expired = session?.isExpired(DateTime.now()) ?? false;
+    final status = session == null
+        ? 'Sin credencial local'
+        : expired
+        ? 'Credencial caducada · vuelve a conectar'
+        : session.expiresAt == null
+        ? 'Credencial guardada · vigencia sin verificar'
+        : 'Credencial guardada · vence ${session.expiresAt!.toLocal()}';
+    return ExpansionTile(
+      leading: const Icon(Icons.drive_file_move_outline),
+      title: const Text('Google Drive'),
+      subtitle: Text(status),
+      childrenPadding: const EdgeInsets.all(16),
       children: [
-        if (!kIsWeb) ...[
-          ListTile(
-            title: Text(
-              (googleToken == null || googleToken!.isEmpty)
-                  ? "Connect Google Drive"
-                  : "Reconnect Google Drive",
-            ),
-            leading: const Icon(Icons.drive_file_move),
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return Scaffold(
-                      appBar: AppBar(title: const Text("Google Drive OAuth")),
-                      body: InAppWebView(
-                        initialSettings: InAppWebViewSettings(
-                          userAgent:
-                              Theme.of(context).platform ==
-                                  TargetPlatform.android
-                              ? "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Mobile Safari/537.36"
-                              : null,
-                          incognito: true,
+        if (widget.apiService.googleSessionError != null)
+          Text(widget.apiService.googleSessionError!),
+        const Text(
+          'La sesión se conserva en almacenamiento seguro. Los errores temporales de red no la eliminan. La validez real se comprueba al realizar una transferencia.',
+        ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          onPressed: _busy
+              ? null
+              : () async {
+                  if (kIsWeb) {
+                    await launchUrl(
+                      _oauthUrl,
+                      mode: LaunchMode.externalApplication,
+                    );
+                    return;
+                  }
+                  final result = await Navigator.of(context)
+                      .push<GoogleDriveSession>(
+                        MaterialPageRoute(
+                          builder: (_) => _GoogleOAuthPage(url: _oauthUrl),
                         ),
-                        initialUrlRequest: URLRequest(
-                          url: WebUri(
-                            'https://api.torbox.app/v1/api/integration/oauth/google',
+                      );
+                  if (!mounted || result == null) return;
+                  await _save(
+                    result.accessToken,
+                    result.expiresAt?.toIso8601String() ?? '',
+                  );
+                },
+          icon: const Icon(Icons.link),
+          label: Text(
+            session == null
+                ? 'Conectar Google Drive'
+                : 'Reconectar Google Drive',
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextButton.icon(
+          onPressed: () =>
+              launchUrl(_oauthUrl, mode: LaunchMode.externalApplication),
+          icon: const Icon(Icons.open_in_browser),
+          label: const Text('Autorizar desde el navegador'),
+        ),
+        const Text(
+          'Si Google rechaza el inicio integrado, autoriza desde el navegador y pega la URL de éxito o el token de forma manual.',
+        ),
+        TextField(
+          controller: widget.googleTokenController,
+          obscureText: true,
+          enableSuggestions: false,
+          autocorrect: false,
+          decoration: const InputDecoration(
+            labelText: 'Token o URL de autorización de Google',
+            helperText: 'Sin fecha conocida se mostrará como no verificado.',
+          ),
+        ),
+        TextButton(
+          onPressed: _busy
+              ? null
+              : () => _save(widget.googleTokenController.text.trim(), ''),
+          child: const Text('Guardar token manual'),
+        ),
+        if (_error != null)
+          Text(
+            _error!,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        if (session != null)
+          TextButton.icon(
+            icon: const Icon(Icons.link_off),
+            label: const Text('Eliminar credencial local'),
+            onPressed: _busy
+                ? null
+                : () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (dialogContext) => AlertDialog(
+                        title: const Text('¿Eliminar la conexión local?'),
+                        content: const Text(
+                          'La API key de TorBox se conserva. Esto no revoca el acceso de Google desde otros dispositivos.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(dialogContext, false),
+                            child: const Text('Cancelar'),
                           ),
-                        ), // TODO: store in apiService as a const
-                        onUpdateVisitedHistory:
-                            (controller, url, isReload) async {
-                              if (url == null) return;
-                              if (url.host == "torbox.app" &&
-                                  url.path == "/oauth/google/success") {
-                                final token = url.queryParameters['token'];
-                                final expiryDate =
-                                    url.queryParameters['expires_at'] ?? "";
-                                _onTokenChanged(token ?? "");
-                                if (token != null) {
-                                  await widget.apiService.saveGoogleToken(
-                                    token,
-                                    expiryDate,
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Google Drive token saved'),
-                                    ),
-                                  );
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Failed to get token'),
-                                    ),
-                                  );
-                                }
-                                Navigator.pop(context);
-                              }
-                            },
+                          FilledButton(
+                            onPressed: () => Navigator.pop(dialogContext, true),
+                            child: const Text('Eliminar'),
+                          ),
+                        ],
                       ),
                     );
+                    if (confirmed != true || !mounted) return;
+                    try {
+                      await widget.apiService.deleteGoogleToken();
+                      if (mounted) setState(() {});
+                    } on Exception {
+                      if (mounted) {
+                        setState(
+                          () => _error =
+                              'No se pudo eliminar la credencial local.',
+                        );
+                      }
+                    }
                   },
-                ),
-              );
-            },
           ),
-        ],
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Manual token',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: widget.googleTokenController,
-                decoration: const InputDecoration(
-                  labelText: 'Paste Google token here',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (value) async {
-                  if (value.isNotEmpty) {
-                    await widget.apiService.saveGoogleToken(value, "");
-                    _onTokenChanged(value);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Token saved")),
-                    );
-                  }
-                },
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () async {
-                  final controller = widget.googleTokenController;
-                  final value = controller.text.trim();
-                  if (value.isNotEmpty) {
-                    controller.clear();
-                    await widget.apiService.saveGoogleToken(value, "");
-                    _onTokenChanged(value);
+      ],
+    );
+  }
+}
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Token saved")),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Token cannot be empty")),
-                    );
-                  }
-                },
-                child: const Text('Save token'),
-              ),
-            ],
-          ),
-        ),
-        ListTile(
-          title: const Text("Get token manually"),
-          subtitle: const Text(
-            "Opens the authentication page in your browser. After authenticating, you will be redirected to a success page. Copy the token from the URL and paste it in the field above.",
-          ),
-          onTap: () async {
-            final url = Uri.parse(
-              'https://api.torbox.app/v1/api/integration/oauth/google',
-            );
-            if (await canLaunchUrl(url)) {
-              await launchUrl(url);
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Could not open browser")),
-              );
-            }
-          },
-        ),
-        if (googleToken != null && googleToken!.isNotEmpty) ...[
-          ListTile(
-            title: const Text("Copy token"),
-            leading: const Icon(Icons.copy),
-            onTap: () async {
-              await Clipboard.setData(
-                ClipboardData(text: googleToken as String),
-              );
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Token copied to clipboard')),
+class _GoogleOAuthPage extends StatefulWidget {
+  final Uri url;
+  const _GoogleOAuthPage({required this.url});
+  @override
+  State<_GoogleOAuthPage> createState() => _GoogleOAuthPageState();
+}
+
+class _GoogleOAuthPageState extends State<_GoogleOAuthPage> {
+  bool _finished = false;
+  String? _error;
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Autorizar Google Drive')),
+    body: Column(
+      children: [
+        if (_error != null)
+          Padding(padding: const EdgeInsets.all(16), child: Text(_error!)),
+        Expanded(
+          child: InAppWebView(
+            initialUrlRequest: URLRequest(url: WebUri(widget.url.toString())),
+            initialSettings: InAppWebViewSettings(
+              incognito: true,
+              useShouldOverrideUrlLoading: true,
+            ),
+            shouldOverrideUrlLoading: (controller, action) async {
+              final url = action.request.url;
+              if (url == null) return NavigationActionPolicy.CANCEL;
+              final uri = Uri.parse(url.toString());
+              if (uri.scheme != 'https') return NavigationActionPolicy.CANCEL;
+              final session = GoogleDriveSession.fromCallback(uri);
+              if (session != null) {
+                if (!_finished && mounted) {
+                  _finished = true;
+                  Navigator.pop(context, session);
+                }
+                return NavigationActionPolicy.CANCEL;
+              }
+              return NavigationActionPolicy.ALLOW;
+            },
+            onReceivedError: (_, _, _) {
+              if (mounted) {
+                setState(
+                  () => _error = 'No se pudo completar la conexión. Tu sesión anterior se conserva.',
                 );
               }
             },
           ),
-          ListTile(
-            title: const Text("Delete token"),
-            leading: const Icon(Icons.delete),
-            onTap: () async {
-              await widget.apiService.deleteGoogleToken();
-              _onTokenChanged("");
-              if (context.mounted) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Token deleted')));
-              }
-            },
-          ),
-        ],
+        ),
       ],
-    );
-  }
+    ),
+  );
 }

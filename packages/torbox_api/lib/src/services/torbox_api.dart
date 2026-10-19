@@ -81,6 +81,9 @@ class TorboxApi {
     stream = StreamService(_client);
   }
 
+  /// Cancel requests when a session is replaced or disposed.
+  void close() => _client.close();
+
   /// Update the API token at runtime.
   void setToken(String? token) => _client.setToken(token);
 

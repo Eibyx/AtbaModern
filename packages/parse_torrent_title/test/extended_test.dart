@@ -7,8 +7,21 @@ import 'package:test/test.dart';
 
 void main() {
   group('Extended', () {
-    test("Ghostbusters - Extended (2016) 1080p H265 BluRay Rip ita eng AC3 5.1", () {
-      expect(parse("Ghostbusters - Extended (2016) 1080p H265 BluRay Rip ita eng AC3 5.1"), equals({"resolution": "1080p", "year": 2016, "extended": true, "source": "BRRip", "codec": "h265", "audio": "ac3", "languages": ["english", "italian"], "title": "Ghostbusters"}));
+    test("Ghostbusters - Extended (2016) 1080p H265 BluRay Rip ita eng AC3 5.1",
+        () {
+      expect(
+          parse(
+              "Ghostbusters - Extended (2016) 1080p H265 BluRay Rip ita eng AC3 5.1"),
+          equals({
+            "resolution": "1080p",
+            "year": 2016,
+            "extended": true,
+            "source": "BRRip",
+            "codec": "h265",
+            "audio": "ac3",
+            "languages": ["english", "italian"],
+            "title": "Ghostbusters"
+          }));
     });
     test("extended", () {
       expect(parse("extended"), equals({"title": "extended"}));

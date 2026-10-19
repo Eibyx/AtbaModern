@@ -1,7 +1,9 @@
 import 'package:atba/models/library_items/library_item.dart';
 import 'package:atba/services/torbox_service.dart';
 import 'package:atba/models/torbox_api_response.dart';
+
 import 'downloadable_item.dart';
+
 import 'package:json_annotation/json_annotation.dart';
 part 'torrent.g.dart';
 
@@ -49,6 +51,9 @@ enum TorrentStatus { idle, loading, success, error }
 
 @JsonSerializable()
 class Torrent extends DownloadableItem {
+  @override
+  String get itemType => 'torrent';
+
   final String hash;
   final String? magnet;
   final int seeds;
@@ -65,11 +70,6 @@ class Torrent extends DownloadableItem {
   final bool longTermSeeding;
   final String? trackerMessage;
   TorrentStatus status = TorrentStatus.idle;
-  @override
-  DownloadableItemStatus? itemStatus;
-  @override
-  @override
-  String? errorMessage;
 
   Torrent({
     required super.id,

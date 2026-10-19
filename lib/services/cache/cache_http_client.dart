@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -16,27 +17,37 @@ class TorboxCacheHttpClient {
   TorboxCacheHttpClient({this.defaultExpiry = const Duration(minutes: 5)});
 
   Future<void> init() async {
-    final appDocDir = kIsWeb ? "/cache" : (await getApplicationCacheDirectory()).path;
-    store = DriftCacheStore(databasePath:  "$appDocDir/torbox_cache");
+    final appDocDir = kIsWeb
+        ? "/cache"
+        : (await getApplicationCacheDirectory()).path;
+    store = DriftCacheStore(databasePath: "$appDocDir/torbox_cache");
   }
 
   /// Generates a cache key based on Uri and headers.
   String _cacheKey(Uri uri, Map<String, String>? headers) {
     final normalizedHeaders = headers != null
         ? Map.fromEntries(
-            headers.entries.map((e) => MapEntry(e.key.toLowerCase(), e.value)))
+            headers.entries.map((e) => MapEntry(e.key.toLowerCase(), e.value)),
+          )
         : null;
-    return _uuid.v5(Namespace.url.value,
-        uri.toString() + (normalizedHeaders?.toString() ?? ''));
+    return _uuid.v5(
+      Namespace.url.value,
+      uri.toString() + (normalizedHeaders?.toString() ?? ''),
+    );
   }
 
-  Future<void> _cacheRequest(String key, http.Response response,
-      {Duration? expiry}) async {
-    await store.set(await response.toCacheResponse(
+  Future<void> _cacheRequest(
+    String key,
+    http.Response response, {
+    Duration? expiry,
+  }) async {
+    await store.set(
+      await response.toCacheResponse(
         key: key,
-        options: CacheOptions(
-            store: store, maxStale: expiry ?? defaultExpiry),
-        requestDate: DateTime.now()));
+        options: CacheOptions(store: store, maxStale: expiry ?? defaultExpiry),
+        requestDate: DateTime.now(),
+      ),
+    );
   }
 
   /// Checks all cache entries for expiry and removes expired ones.
@@ -49,10 +60,12 @@ class TorboxCacheHttpClient {
       RegExp(pattern.replaceFirst(r"^", "^(?:/v1)?")).hasMatch(path);
 
   /// Custom get method, similar to http.get, with advanced cache logic
-  Future<http.Response> get(Uri uri,
-      {Map<String, String>? headers,
-      Duration? expiry,
-      bool? cacheAndRefreshMylist}) async {
+  Future<http.Response> get(
+    Uri uri, {
+    Map<String, String>? headers,
+    Duration? expiry,
+    bool? cacheAndRefreshMylist,
+  }) async {
     await _purgeExpired();
 
     final path = uri.path;
@@ -68,7 +81,7 @@ class TorboxCacheHttpClient {
       r'^/api/rss/getfeeds',
       r'^/api/rss/getfeeditems',
       r'^/api/integration/jobs($|/)',
-      r'^/api/torrents/torrentinfo'
+      r'^/api/torrents/torrentinfo',
     ];
     for (final pattern in neverCacheEndpoints) {
       if (_matches(pattern, path)) {
@@ -110,8 +123,9 @@ class TorboxCacheHttpClient {
       return await _getWithCache(
         uri,
         headers,
-        expiry:
-            isSearch ? const Duration(minutes: 10) : const Duration(minutes: 5),
+        expiry: isSearch
+            ? const Duration(minutes: 10)
+            : const Duration(minutes: 5),
       );
     }
 
@@ -135,18 +149,25 @@ class TorboxCacheHttpClient {
         final bypassCacheUri = uri.replace(queryParameters: newQueryParameters);
         final bypassCacheKey = _cacheKey(bypassCacheUri, headers);
 
-        return await _getWithCache(uri, headers,
-            expiry: const Duration(days: 1), providedKey: bypassCacheKey);
+        return await _getWithCache(
+          uri,
+          headers,
+          expiry: const Duration(days: 1),
+          providedKey: bypassCacheKey,
+        );
       }
     }
 
     // --- Default: use network, but allow cache fallback on error ---
     try {
       final response = await http.get(uri, headers: headers);
-      await store.set(await response.toCacheResponse(
+      await store.set(
+        await response.toCacheResponse(
           key: _cacheKey(uri, headers),
           options: CacheOptions(store: store),
-          requestDate: DateTime.now()));
+          requestDate: DateTime.now(),
+        ),
+      );
       return response;
     } catch (_) {
       // On error, try to return cache if available and not expired
@@ -171,18 +192,22 @@ class TorboxCacheHttpClient {
   }
 
   /// Helper to get with cache and expiry
-  Future<http.Response> _getWithCache(Uri uri, Map<String, String>? headers,
-      {Duration? expiry, String? providedKey}) async {
+  Future<http.Response> _getWithCache(
+    Uri uri,
+    Map<String, String>? headers, {
+    Duration? expiry,
+    String? providedKey,
+  }) async {
     final key = providedKey ?? _cacheKey(uri, headers);
     final cached = await store.get(key);
 
     if (cached != null) {
       try {
         if (!cached.isStaled()) {
-          print("Cache hit for $uri");
           final headersMap = cached.headers != null
               ? Map<String, String>.from(
-                  jsonDecode(utf8.decode(cached.headers!)))
+                  jsonDecode(utf8.decode(cached.headers!)),
+                )
               : <String, String>{};
           return http.Response.bytes(
             cached.content!,
@@ -209,7 +234,9 @@ class TorboxCacheHttpClient {
   }
 
   Future<void> clearCache() async {
-    final appDocDir = kIsWeb ? "/cache" : (await getApplicationCacheDirectory()).path;
+    final appDocDir = kIsWeb
+        ? "/cache"
+        : (await getApplicationCacheDirectory()).path;
     await store.delete("$appDocDir/torbox_cache");
   }
 }

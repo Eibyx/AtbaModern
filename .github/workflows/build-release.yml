@@ -1,129 +1,54 @@
-name: Build & Release
-
+name: ATBA Modern · Signed build (manual)
 on:
-  push:
-    tags:
-      - v*
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref_name }}
-  cancel-in-progress: true
-
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  build-and-release-android:
-    name: Build and Release Android APKs
+  signed-apk:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 50
+    env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ATBA_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+      ATBA_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ATBA_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 3.47.5
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "17"
-
-      - name: Decode Keystore
+      - uses: actions/checkout@v4
+      - name: Require user-managed production signing
+        shell: bash
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-
-      - name: Configure Android Keystore
-        run: echo "${{ secrets.ANDROID_KEYSTORE_PROPERTIES }}" > android/key.properties
-
-      - name: Get Dependencies
-        run: flutter pub get
-
-      - name: Run build_runner
-        run: flutter pub run build_runner build --delete-conflicting-outputs
-
-      - name: Update Version in pubspec.yaml
+          test -n "$ANDROID_KEYSTORE_BASE64" || { echo 'Missing ANDROID_KEYSTORE_BASE64'; exit 1; }
+          test -n "$ATBA_STORE_PASSWORD" || { echo 'Missing ANDROID_STORE_PASSWORD'; exit 1; }
+          test -n "$ATBA_KEY_ALIAS" || { echo 'Missing ANDROID_KEY_ALIAS'; exit 1; }
+          test -n "$ATBA_KEY_PASSWORD" || { echo 'Missing ANDROID_KEY_PASSWORD'; exit 1; }
+          umask 077
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/atba-release.jks"
+          printf 'ATBA_STORE_FILE=%s\n' "$RUNNER_TEMP/atba-release.jks" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/atba-flutter
+          key: flutter-source-${{ runner.os }}-6a19cca56475dbfba1478ee68d7bd0c2ef891da1
+      - name: Bootstrap pinned official Flutter SDK
+        run: bash tool/setup_flutter.sh "$RUNNER_TEMP/atba-flutter"
+      - name: SQLite test dependency
+        run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
+      - name: All required checks
+        run: bash tool/ci_verify.sh
+      - name: Compile signed ARM64 APK
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          sed -i "s/^version:.*/version: $VERSION+2001/" pubspec.yaml
-
-      - name: Build split APKs
-        run: flutter build apk --release --split-per-abi
-      - name: Build universal APK
-        run: flutter build apk --release
-
-      - name: Rename APKs
-        run: |
-          cd build/app/outputs/flutter-apk
-          mv app-arm64-v8a-release.apk atba-${{ github.ref_name }}-arm64-v8a.apk
-          mv app-armeabi-v7a-release.apk atba-${{ github.ref_name }}-armeabi-v7a.apk
-          mv app-x86_64-release.apk atba-${{ github.ref_name }}-x86_64.apk
-          mv app-release.apk atba-${{ github.ref_name }}-universal.apk
-
-
-      - name: Upload APKs
-        uses: actions/upload-artifact@v4
+          flutter build apk --release --target-platform android-arm64
+          mkdir -p artifacts
+          cp build/app/outputs/flutter-apk/app-release.apk artifacts/ATBA-Modern-arm64-v8a-signed.apk
+          sha256sum artifacts/*.apk > artifacts/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
         with:
-          path: build/app/outputs/flutter-apk/atba-*.apk
-          name: apks
-
-
-      - name: Release APKs
-        uses: softprops/action-gh-release@v1
-        with:
-          files: build/app/outputs/flutter-apk/atba-*.apk
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-
-  build-and-release-ios:
-    name: Build and Release iOS IPA
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 3.47.5
-
-      - name: Get Dependencies
-        run: flutter pub get
-
-      - name: Run build_runner
-        run: flutter pub run build_runner build --delete-conflicting-outputs
-
-      - name: Update Version in pubspec.yaml
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          sed -i '' "s/^version:.*/version: $VERSION/" pubspec.yaml
-
-      - name: Build iOS IPA
-        run: |
-          flutter build ios --release --no-codesign
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
-          zip -r atba-${{ github.ref_name }}.ipa Payload
-
-      - name: Upload IPA
-        uses: actions/upload-artifact@v4
-        with:
-          path: build/ios/iphoneos/atba-${{ github.ref_name }}.ipa
-          name: ipa
-
-      - name: Release IPA
-        uses: softprops/action-gh-release@v1
-        with:
-          files: build/ios/iphoneos/atba-${{ github.ref_name }}.ipa
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: ${{ github.ref_name }}
-          draft: false
-          prerelease: false
+          name: ATBA-Modern-signed-${{ github.sha }}
+          path: artifacts/
+          if-no-files-found: error
+      - name: Remove decoded keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/atba-release.jks"

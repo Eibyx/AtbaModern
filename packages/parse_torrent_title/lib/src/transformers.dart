@@ -65,7 +65,8 @@ dynamic range(String input, [dynamic previous]) {
   }
 
   final ascending = values.asMap().entries.every((entry) =>
-      entry.key == values.length - 1 || entry.value + 1 == values[entry.key + 1]);
+      entry.key == values.length - 1 ||
+      entry.value + 1 == values[entry.key + 1]);
   if (!ascending) return null;
 
   return values;
@@ -111,7 +112,8 @@ Transformer array(Transformer? chain) => (String input, [dynamic previous]) =>
     [chain == null ? input : chain(input)];
 
 /// Appends [chain]'s result to the list parsed so far, without duplicates.
-Transformer uniqConcat(Transformer chain) => (String input, [dynamic previous]) {
+Transformer uniqConcat(Transformer chain) =>
+    (String input, [dynamic previous]) {
       final existing = previous is List ? previous : <dynamic>[];
       final produced = chain(input);
       return existing.contains(produced) ? existing : [...existing, produced];

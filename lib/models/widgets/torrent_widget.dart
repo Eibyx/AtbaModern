@@ -82,6 +82,7 @@ class TorrentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = context.read<LibraryPageState>();
     final torrentState = torrent.active
         ? torrent.downloadState
         : torrent.downloadState == "uploading"
@@ -96,7 +97,10 @@ class TorrentWidget extends StatelessWidget {
       onDetailTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => DownloadableItemDetailScreen(item: torrent),
+          builder: (context) => ChangeNotifierProvider.value(
+            value: state,
+            child: DownloadableItemDetailScreen(item: torrent),
+          ),
         ),
       ),
     );
@@ -228,7 +232,7 @@ class _BaseTorrentWidget extends StatelessWidget {
     final isCensored = state.isTorrentNamesCensored;
     final isSelected = state.selectedItems.any(
       (selectedItem) =>
-          selectedItem.id == item.id &&
+          selectedItem.identity == item.identity &&
           selectedItem.runtimeType == item.runtimeType,
     );
 

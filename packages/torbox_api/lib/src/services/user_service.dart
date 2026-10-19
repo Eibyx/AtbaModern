@@ -143,8 +143,8 @@ class UserService {
 
   /// Update the user's account settings.
   ///
-  /// Every field is optional. A field that the caller does not set is sent as
-  /// null, which leaves that setting unchanged.
+  /// Only supplied non-null fields are sent. Unedited account settings are
+  /// never replaced with null or client defaults.
   Future<TorBoxResponse<Null>> editSettings({
     bool? emailNotifications,
     bool? webNotifications,
@@ -252,7 +252,8 @@ class UserService {
         'stremio_disable_your_media_streams': stremioDisableYourMediaStreams,
         'webdav_use_folder_view': webdavUseFolderView,
         'webdav_flatten': webdavFlatten,
-        'stremio_limit_per_resolution_torrent': stremioLimitPerResolutionTorrent,
+        'stremio_limit_per_resolution_torrent':
+            stremioLimitPerResolutionTorrent,
         'stremio_limit_per_resolution_usenet': stremioLimitPerResolutionUsenet,
         'stremio_torrent_seeders_cutoff': stremioTorrentSeedersCutoff,
         'pixeldrain_api_key': pixeldrainApiKey,
@@ -267,14 +268,16 @@ class UserService {
         'web_player_always_transcode': webPlayerAlwaysTranscode,
         'web_player_always_skip_intro': webPlayerAlwaysSkipIntro,
         'web_player_audio_preferred_language': webPlayerAudioPreferredLanguage,
-        'web_player_subtitle_preferred_language': webPlayerSubtitlePreferredLanguage,
-        'web_player_disable_prestream_selector': webPlayerDisablePrestreamSelector,
+        'web_player_subtitle_preferred_language':
+            webPlayerSubtitlePreferredLanguage,
+        'web_player_disable_prestream_selector':
+            webPlayerDisablePrestreamSelector,
         'dashboard_sort': dashboardSort,
         'web_player_disable_next_up_dialogue': webPlayerDisableNextUpDialogue,
         'web_player_enable_scrobbling': webPlayerEnableScrobbling,
         'append_filename_to_links': appendFilenameToLinks,
         'subscribed_email_segments': subscribedEmailSegments,
-      },
+      }..removeWhere((key, value) => value == null),
     );
     return nullResponseFromJson(response);
   }

@@ -1,14 +1,12 @@
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
   issues: write
   pull-requests: write
 
-name: release-please
+name: Release metadata (manual)
 
 jobs:
   release-please:

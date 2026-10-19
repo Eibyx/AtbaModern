@@ -60,11 +60,10 @@ abstract class TorrentData with _$TorrentData {
 /// rather than a list.
 TorBoxResponse<TorrentData> torrentResponseFromJson(
   Map<String, dynamic> json,
-) =>
-    TorBoxResponse.fromJson(
-      json,
-      (data) => TorrentData.fromJson(data as Map<String, dynamic>),
-    );
+) => TorBoxResponse.fromJson(
+  json,
+  (data) => TorrentData.fromJson(data as Map<String, dynamic>),
+);
 
 /// Parses a full API envelope for `GET /v1/api/torrents/mylist`, whose
 /// `data` is a list of torrents.

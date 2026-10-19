@@ -30,6 +30,7 @@ Future<bool> showPermissionDialog(BuildContext context) async {
                     TextButton(
                       onPressed: () async {
                         bool granted = await getStorageGranted(context);
+                        if (!context.mounted) return;
                         Navigator.of(context).pop(granted);
                       },
                       child: const Text('Yes'),

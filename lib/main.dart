@@ -6,111 +6,151 @@ import 'package:atba/services/web_js_interop_service/web_js_interop_service.dart
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart';
+import 'package:atba/theme/modern_theme.dart';
+import 'package:atba/config/constants.dart';
+import 'package:atba/models/widgets/multi_value_change_observer.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:provider/provider.dart';
+
 import 'services/shared_prefs_service.dart';
 import 'services/secure_storage_service.dart';
 import 'services/torbox_service.dart';
-import 'services/stremio_service.dart';
 
 import 'package:dynamic_color/dynamic_color.dart';
+
 import 'screens/setup/api_screen.dart';
 import 'screens/home_page.dart';
+
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+
 import 'app_state.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
-  if (kIsWeb) sendPostMessage();
+  try {
+    if (kIsWeb) sendPostMessage();
 
-  await initSettings();
+    await initSettings();
 
-  final sharedPrefsService = SharedPrefsService();
-  await sharedPrefsService.init();
+    final sharedPrefsService = SharedPrefsService();
+    await sharedPrefsService.init();
 
-  final secureStorageService = SecureStorageService();
+    final secureStorageService = SecureStorageService();
 
-  final isFirstRun = sharedPrefsService.getString('isFirstRun') == null;
+    final isFirstRun = sharedPrefsService.getString('isFirstRun') == null;
 
-  final apiService = TorboxAPI(secureStorageService: secureStorageService);
-  await apiService.init();
+    final apiService = TorboxAPI(secureStorageService: secureStorageService);
+    await apiService.init();
 
-  final hasApiKey = apiService.hasApiKey;
+    final hasApiKey = apiService.hasApiKey;
 
-  LibraryItem.initApiService(apiService);
-  final stremioService = StremioRequests();
+    LibraryItem.initApiService(apiService);
 
-  if (!kIsWeb) {
-    FileDownloader().configureNotification(
-      tapOpensFile: true,
-      progressBar: true,
-      running: TaskNotification('Downloading', '{progress} {filename}'),
-      complete: TaskNotification('Download finished', '{filename}'),
-      error: TaskNotification("Error", "{filename}"),
-      paused: TaskNotification("Paused", "{filename}"),
-      canceled: TaskNotification("Canceled", "{filename}"),
-    );
-  }
-  FileDownloader().configure(
-    globalConfig: (Config.useExternalStorage, "always"),
-  );
-
-  // Store exceptions mapped by taskId
-  final Map<String, TaskException?> errorDetails = {};
-
-  //  to listen for task status updates
-  void taskStatusCallback(TaskStatusUpdate update) {
-    if (update.status == TaskStatus.failed) {
-      errorDetails[update.task.taskId] = update.exception;
+    if (!kIsWeb) {
+      FileDownloader().configureNotification(
+        tapOpensFile: true,
+        progressBar: true,
+        running: TaskNotification('Downloading', '{progress} {filename}'),
+        complete: TaskNotification('Download finished', '{filename}'),
+        error: TaskNotification("Error", "{filename}"),
+        paused: TaskNotification("Paused", "{filename}"),
+        canceled: TaskNotification("Canceled", "{filename}"),
+      );
     }
-  }
+    if (!kIsWeb) {
+      FileDownloader().configure(
+        globalConfig: (Config.useExternalStorage, "always"),
+      );
+    }
 
-  Future<void> notificationTapCallback(
-    Task task,
-    NotificationType notificationType,
-  ) async {
-    if (notificationType == NotificationType.error) {
-      final exception = errorDetails[task.taskId];
-      if (exception != null) {
-        print('Error for task ${task.taskId}: ${exception.description}');
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/downloadError.txt');
-        file.writeAsString(exception.description);
-        OpenFile.open(file.path);
+    // Store exceptions mapped by taskId
+    final Map<String, TaskException?> errorDetails = {};
+
+    //  to listen for task status updates
+    void taskStatusCallback(TaskStatusUpdate update) {
+      if (update.status == TaskStatus.failed) {
+        errorDetails[update.task.taskId] = update.exception;
+      } else if (update.status == TaskStatus.complete ||
+          update.status == TaskStatus.canceled) {
+        errorDetails.remove(update.task.taskId);
       }
     }
+
+    Future<void> notificationTapCallback(
+      Task task,
+      NotificationType notificationType,
+    ) async {
+      if (notificationType == NotificationType.error) {
+        final exception = errorDetails[task.taskId];
+        if (exception != null) {
+          // Never log a downloader exception: it can contain a signed URL.
+          final directory = await getApplicationDocumentsDirectory();
+          final file = File('${directory.path}/downloadError.txt');
+          await file.writeAsString(
+            'No se pudo completar la descarga. Comprueba la conexión, el espacio disponible y la vigencia del enlace de TorBox.',
+          );
+          OpenFile.open(file.path);
+        }
+      }
+    }
+
+    if (!kIsWeb) {
+      FileDownloader().registerCallbacks(
+        taskStatusCallback: taskStatusCallback,
+        taskNotificationTapCallback: notificationTapCallback,
+      );
+    }
+
+    runApp(
+      MultiProvider(
+        providers: [
+          Provider<SharedPrefsService>.value(value: sharedPrefsService),
+          Provider<SecureStorageService>.value(value: secureStorageService),
+          ChangeNotifierProvider<TorboxAPI>.value(value: apiService),
+          ProxyProvider<TorboxAPI, UpdateService>(
+            update: (_, torboxApi, _) => UpdateService(torboxApi),
+          ),
+          ChangeNotifierProvider<AppState>(
+            create: (_) => AppState(
+              sharedPrefsService: sharedPrefsService,
+              secureStorageService: secureStorageService,
+              apiService: apiService,
+            )..initializeApp(),
+          ),
+        ],
+        child: AtbaApp(isFirstRun: isFirstRun, hasApiKey: hasApiKey),
+      ),
+    );
+  } on Object {
+    runApp(
+      MaterialApp(
+        title: 'ATBA Modern',
+        theme: ModernTheme.build(Brightness.dark),
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'No se pudo iniciar el almacenamiento local. Las credenciales no se han eliminado.',
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: main,
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
-
-  FileDownloader().registerCallbacks(
-    taskStatusCallback: taskStatusCallback,
-    taskNotificationTapCallback: notificationTapCallback,
-  );
-
-  runApp(
-    MultiProvider(
-      providers: [
-        Provider<SharedPrefsService>.value(value: sharedPrefsService),
-        Provider<SecureStorageService>.value(value: secureStorageService),
-        Provider<TorboxAPI>.value(value: apiService),
-        ProxyProvider<TorboxAPI, UpdateService>(
-          update: (_, torboxApi, _) => UpdateService(torboxApi),
-        ),
-        ChangeNotifierProvider<StremioRequests>.value(value: stremioService),
-        ChangeNotifierProvider<AppState>(
-          create: (_) => AppState(
-            sharedPrefsService: sharedPrefsService,
-            secureStorageService: secureStorageService,
-            apiService: apiService,
-          )..initializeApp(),
-        ),
-      ],
-      child: AtbaApp(isFirstRun: isFirstRun, hasApiKey: hasApiKey),
-    ),
-  );
 }
 
 Future<void> initSettings() async {
@@ -124,58 +164,38 @@ class AtbaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppState>(
-      builder: (context, appState, _) {
-        if (appState.isLoading) {
-          return const MaterialApp(home: SplashScreen());
-        }
-        if (appState.hasError) {
-          return const MaterialApp(home: ErrorScreen());
-        }
-
-        return DynamicColorBuilder(
-          builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-            ColorScheme lightColorScheme;
-            ColorScheme darkColorScheme;
-
-            if (lightDynamic != null && darkDynamic != null) {
-              lightColorScheme = lightDynamic;
-              darkColorScheme = darkDynamic;
-            } else {
-              lightColorScheme = ColorScheme.fromSeed(
-                seedColor: const Color.fromRGBO(0, 246, 33, 1),
-              );
-              darkColorScheme = ColorScheme.fromSeed(
-                seedColor: const Color.fromRGBO(0, 246, 33, 1),
-                brightness: Brightness.dark,
-              );
-            }
-
-            return MaterialApp(
-              title: '',
-              theme: ThemeData(
-                pageTransitionsTheme: const PageTransitionsTheme(
-                  builders: <TargetPlatform, PageTransitionsBuilder>{
-                    // Set the predictive back transitions for Android.
-                    TargetPlatform.android:
-                        PredictiveBackPageTransitionsBuilder(),
-                  },
-                ),
-                useMaterial3: true,
-                colorScheme: lightColorScheme,
-              ),
-              darkTheme: ThemeData(
-                useMaterial3: true,
-                colorScheme: darkColorScheme,
-              ),
-              themeMode: ThemeMode.system,
-              home: isFirstRun
-                  ? (hasApiKey ? const HomeScreen() : ApiKeyScreen())
-                  : const HomeScreen(),
-            );
-          },
-        );
+    final appState = context.watch<AppState>();
+    final api = context.watch<TorboxAPI>();
+    return MultiValueChangeObserver(
+      cacheKeysWithDefaultValues: {
+        Constants.theme: 'system',
+        'modern-dynamic-colors': true,
       },
+      builder: (context, values) => DynamicColorBuilder(
+        builder: (light, dark) {
+          final dynamicColors = values['modern-dynamic-colors'] == true;
+          return MaterialApp(
+            title: 'ATBA Modern',
+            debugShowCheckedModeBanner: false,
+            theme: ModernTheme.build(
+              Brightness.light,
+              dynamicColors: dynamicColors ? light : null,
+            ),
+            darkTheme: ModernTheme.build(
+              Brightness.dark,
+              dynamicColors: dynamicColors ? dark : null,
+            ),
+            themeMode: ModernTheme.mode(values[Constants.theme] as String?),
+            home: appState.isLoading
+                ? const SplashScreen()
+                : appState.hasError
+                ? const ErrorScreen()
+                : api.hasApiKey
+                ? HomeScreen(key: ValueKey(api.sessionVersion))
+                : const ApiKeyScreen(),
+          );
+        },
+      ),
     );
   }
 }
