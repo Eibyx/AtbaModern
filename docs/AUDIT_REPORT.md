@@ -84,7 +84,7 @@ Baseline ejecutado: 1.277 pruebas del parser y 64 de torbox_api pasan. El primer
 | A17 | Corregido | retry_safety_test: POST no se repite; GET limitado; cancelación de sesión y Retry-After soportado. |
 | A18 | Mitigado | Trabajo con nombre ausente aceptado; errores de conversión del adaptador se muestran de forma segura. Variaciones no documentadas requieren más fixtures reales. |
 | A19 | Corregido | Un MaterialApp, tema M3 e Inter; fallback de modo desconocido probado. |
-| A20–22 | Implementado, compilación de Actions por comprobar en TEST_REPORT | Firma debug independiente; workflow validación/APK; release y release-please solo manuales. Ninguna release publicada por esta tarea. |
+| A20–22 | Compilación Actions comprobada; firma ampliada en la puerta de artifacts | validate y android aprobaron en 39239270267. Firma debug independiente; workflow validación/APK; release y release-please solo manuales. Ninguna release publicada por esta tarea. |
 | A23 | Corregido | Directorio temporal SQLite existente; pruebas de apertura, migración y reapertura. Android físico pendiente. |
 | A24–25 | Corregido en el flujo nuevo | Intents requieren envío explícito; formulario común con dispose, campo protegido y estado ocupado. |
 | A26 | Corregido en el flujo nuevo | Persistencia esperada/transaccional, errores sin dumps ni URLs firmadas; suscripción del reproductor liberada. |

@@ -64,8 +64,24 @@ jobs:
       - name: Verify APK files and record checksums
         run: |
           test -s artifacts/ATBA-Modern-arm64-v8a.apk
-          for apk in artifacts/*.apk; do unzip -t "$apk" > /dev/null; done
+          ATBA_BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
+          test -x "$ATBA_BUILD_TOOLS/apksigner"
+          for apk in artifacts/*.apk; do
+            unzip -t "$apk" > /dev/null
+            "$ATBA_BUILD_TOOLS/apksigner" verify --verbose --print-certs "$apk"
+            ATBA_APK_BADGING=$("$ATBA_BUILD_TOOLS/aapt2" dump badging "$apk")
+            printf '%s\n' "$ATBA_APK_BADGING" | head -12
+            printf '%s\n' "$ATBA_APK_BADGING" | grep -q "package: name='com.eibyx.atbamodern.debug'"
+            if [[ "$apk" == *arm64-v8a.apk ]]; then
+              ATBA_ABIS=$(unzip -Z -1 "$apk" | sed -n 's@^lib/\([^/]*\)/.*@\1@p' | sort -u)
+              test "$ATBA_ABIS" = arm64-v8a
+            fi
+            ATBA_APK_HASH=$(sha256sum "$apk" | cut -d ' ' -f1)
+            ATBA_APK_BYTES=$(stat -c%s "$apk")
+            echo "::notice title=Verified APK::${apk##*/}; bytes=$ATBA_APK_BYTES; sha256=$ATBA_APK_HASH; signature=verified"
+          done
           sha256sum artifacts/*.apk > artifacts/SHA256SUMS.txt
+          cat artifacts/SHA256SUMS.txt
           ls -lh artifacts
       - uses: actions/upload-artifact@v4
         with:

@@ -40,3 +40,11 @@ Metadatos oficiales de Pub revisados para 203 versiones alojadas. Cuatro paquete
 ## Aceptación manual
 
 Los escenarios A–E y las comprobaciones pendientes se especifican en KNOWN_LIMITATIONS.md. Las pruebas físicas de muerte de proceso/reinicio, autorización Google, transferencias reales, descarga local/permisos y rendimiento en una biblioteca grande siguen siendo necesarias.
+
+## GitHub Actions y artifact
+
+La ejecución [39239270267](https://github.com/Eibyx/AtbaModern/actions/runs/39239270267) terminó correctamente: validate y android aprobaron. Compiló el merge de prueba 2aa24971821c05e4bd483f4e9c87223b0c959757 de la rama 5dd2d827ebd08d7af4c78c08698062931e330e0e. El [artifact ARM64](https://github.com/Eibyx/AtbaModern/actions/runs/39239270267/artifacts/12181266127) ocupa 91.778.772 bytes como archivo de distribución; no es el tamaño exacto interno del APK. Su workflow comprobó presencia, contenido ZIP y generó SHA256SUMS.txt.
+
+La descarga del artifact a esta máquina devolvió Forbidden en el host de almacenamiento de Actions; no se presenta como comprobada una inspección local que no pudo realizarse. Se añadió a la puerta de publicación del workflow apksigner, comprobación de package ID, ABI ARM64 y un notice de integridad con tamaño/hash. La [ejecución del PR](https://github.com/Eibyx/AtbaModern/pull/1/checks) muestra el resultado actualizado de esas comprobaciones; un artifact nuevo solo se publica después de superarlas. No se publica ninguna release de producción.
+
+El build web final también pasó, incluidas las fuentes Material/Cupertino. En Chromium se verificaron acceso sin cuenta y dashboard con interceptación HTTP explícitamente simulada, sin pageerrors; esa prueba no constituye verificación contra una cuenta real.

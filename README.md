@@ -26,6 +26,8 @@ La captura corresponde al arranque sin una cuenta configurada, no a métricas in
 
 ## Instalar desde Android, sin computadora
 
+Primera compilación disponible: [APK ARM64 como artifact de GitHub Actions](https://github.com/Eibyx/AtbaModern/actions/runs/39239270267/artifacts/12181266127). Para la versión más reciente, consulta los checks del PR y los artifacts de la última ejecución exitosa.
+
 1. Abre [GitHub Actions](https://github.com/Eibyx/AtbaModern/actions/workflows/debug.yml) en el navegador.
 2. Ejecuta `debug.yml` / **ATBA Modern · Validate and APK** y elige la rama `feat/atba-modern-overhaul` mientras el PR esté pendiente. Tras fusionarlo, utiliza `main`.
 3. Espera a que terminen **validate** y **android**. Descarga el artifact `ATBA-Modern-Android-<commit>` del resumen de la ejecución.
