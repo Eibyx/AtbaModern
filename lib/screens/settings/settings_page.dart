@@ -147,16 +147,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 ElevatedButton(
                   onPressed: () async {
                     final apiKey = apiKeyController.text.trim();
-                    await apiService.saveApiKey(apiKey);
-                    final response = await apiService.getUserData();
+                    final response = await apiService.validateAndSaveApiKey(
+                      apiKey,
+                    );
+                    if (!context.mounted) return;
                     if (apiKey.isNotEmpty && response.success) {
-                      await apiService.saveApiKey(apiKey);
                       ScaffoldMessenger.of(
                         context,
                       ).showSnackBar(SnackBar(content: Text('API Key saved')));
                       Navigator.pop(context);
                     } else {
-                      apiService.deleteApiKey();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
@@ -306,9 +306,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   onTap: () async {
                     await apiService.deleteTorboxCache();
                     await cacheService.clearCache();
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('Cache cleared')));
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text('Cache cleared')));
                   },
                 ),
               ],

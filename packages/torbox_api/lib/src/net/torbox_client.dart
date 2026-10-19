@@ -15,6 +15,13 @@ class TorboxClient {
   late final Dio _dio;
   final AuthInterceptor _authInterceptor;
 
+  final CancelToken _sessionCancellation = CancelToken();
+
+  void close() {
+    _sessionCancellation.cancel();
+    _dio.close(force: true);
+  }
+
   TorboxClient({
     required String baseUrl,
     String? token,
@@ -38,6 +45,12 @@ class TorboxClient {
     );
 
     _dio.interceptors.addAll([
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          options.cancelToken ??= _sessionCancellation;
+          handler.next(options);
+        },
+      ),
       _authInterceptor,
       RetryInterceptor(
         dio: _dio,

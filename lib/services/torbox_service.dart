@@ -14,7 +14,7 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart'
     show Settings;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:atba/services/cache/cache_dio_interceptor.dart';
+import 'package:atba/services/google_drive_session.dart';
 import 'package:atba/services/cache/cache_http_client.dart';
 import 'package:atba/services/secure_storage_service.dart';
 import 'package:torbox_api/torbox_api.dart' as torbox;
@@ -49,13 +49,23 @@ class TorboxAPI {
   String? googleToken;
 
   final String baseUrl;
+  final torbox.TorboxApi Function(String token)? apiFactory;
+  late final GoogleDriveSessionStore googleSessions = GoogleDriveSessionStore(
+    secureStorageService,
+    legacyExpiry: () =>
+        Settings.getValue<String>(Constants.googleDriveTokenExpiry),
+  );
+  GoogleDriveSession? googleSession;
+  bool _changingCredential = false;
+  torbox.TorboxApi? get authenticatedApi => _api;
 
   TorboxAPI({
     required this.secureStorageService,
-    TorboxCacheHttpClient? client,
+    this.client,
+    this.apiFactory,
     this.baseUrl = '$api_base/$api_version',
     this.apiKey,
-  }) : client = kIsWasm ? null : TorboxCacheHttpClient() {
+  }) {
     _syncApi();
   }
 
@@ -79,13 +89,23 @@ class TorboxAPI {
 
   /// Creates — or clears — the new-API facade to match the current [apiKey].
   void _syncApi() {
-    _api = apiKey == null
-        ? null
-        : torbox.TorboxApi(token: apiKey!, baseUrl: baseUrl);
-    // Registered after construction so it runs after the built-in auth
-    // interceptor, and therefore sees the Authorization header that the
-    // cache key is derived from.
-    _api?.addInterceptor(TorboxCacheInterceptor(client: client));
+    final previous = _api;
+    _api = apiKey == null || apiKey!.isEmpty ? null : _newApi(apiKey!);
+    previous?.close();
+  }
+
+  torbox.TorboxApi _newApi(String token) =>
+      apiFactory?.call(token) ??
+      torbox.TorboxApi(
+        token: token,
+        baseUrl: baseUrl,
+        timeout: const Duration(seconds: 20),
+        maxAttempts: 2,
+        retryDelay: const Duration(seconds: 1),
+      );
+
+  void clearDownloadsPageState(LibraryPageState state) {
+    if (identical(downloadsPageState, state)) downloadsPageState = null;
   }
 
   /// Runs [call] and turns any failure into a legacy error response.
@@ -110,13 +130,21 @@ class TorboxAPI {
       return TorboxAPIResponse(
         success: false,
         error: e.errorCode ?? 'HTTP ${e.statusCode}',
-        detail: e.detail ?? e.message,
+        detail: e.statusCode == 401 || e.statusCode == 403
+            ? 'TorBox no ha autorizado esta operación. Revisa la credencial o tu plan.'
+            : 'TorBox no pudo completar la solicitud. Se reintentará cuando corresponda.',
       );
-    } on Exception catch (e) {
+    } on TypeError {
+      return TorboxAPIResponse(
+        success: false,
+        error: 'INVALID_RESPONSE',
+        detail: 'La respuesta de TorBox no tiene el formato esperado.',
+      );
+    } on Exception {
       return TorboxAPIResponse(
         success: false,
         error: 'CLIENT_ERROR',
-        detail: e.toString(),
+        detail: 'No se pudo completar la solicitud. Comprueba la conexión e inténtalo de nuevo.',
       );
     }
   }
@@ -299,40 +327,86 @@ class TorboxAPI {
     await client?.store.clean();
   }
 
-  Future<void> saveApiKey(String apiKeyToSave) async {
-    await secureStorageService.write('api_key', apiKeyToSave);
-    apiKey = apiKeyToSave;
-    _syncApi();
-    // now we add referral
-    Future.microtask(() async {
+  Future<TorboxAPIResponse> validateAndSaveApiKey(String value) async {
+    final candidate = value.trim();
+    if (candidate.isEmpty || _changingCredential) {
+      return TorboxAPIResponse(
+        success: false,
+        error: 'INVALID_CREDENTIAL',
+        detail: candidate.isEmpty
+            ? 'Introduce una API key de TorBox.'
+            : 'Ya se está comprobando una credencial.',
+      );
+    }
+    _changingCredential = true;
+    final verifier = _newApi(candidate);
+    try {
+      final response = await verifier.user.getUserData();
+      if (!response.success || response.data == null) {
+        return TorboxAPIResponse(
+          success: false,
+          error: 'INVALID_CREDENTIAL',
+          detail: 'TorBox no ha aceptado la nueva API key. Se conserva la anterior.',
+        );
+      }
+      await secureStorageService.write('api_key', candidate);
+      apiKey = candidate;
+      _syncApi();
       await deleteTorboxCache();
-      await addReferralCode('61747744-fc2c-4580-907e-1e3816f54bfa');
-    });
+      await downloadsPageState?.resetForAccountChange();
+      return TorboxAPIResponse(success: true, detail: 'API key verificada.');
+    } on Exception {
+      return TorboxAPIResponse(
+        success: false,
+        error: 'CREDENTIAL_CHECK_FAILED',
+        detail:
+            'No se pudo verificar la API key. Se conserva la sesión anterior.',
+      );
+    } finally {
+      verifier.close();
+      _changingCredential = false;
+    }
+  }
+
+  Future<void> saveApiKey(String value) async {
+    final response = await validateAndSaveApiKey(value);
+    if (!response.success) throw StateError(response.detailOrUnknown);
   }
 
   Future<void> deleteApiKey() async {
     await secureStorageService.delete('api_key');
     apiKey = null;
     _syncApi();
-    Future.microtask(() async {
-      await deleteTorboxCache();
-    });
+    await deleteTorboxCache();
+    await downloadsPageState?.resetForAccountChange();
   }
 
-  Future<void> saveGoogleToken(String token, String unixExpiryDate) async {
-    await secureStorageService.write(Constants.googleDriveToken, token);
-    await Settings.setValue(Constants.googleDriveTokenExpiry, unixExpiryDate);
-    googleToken = token;
+  Future<void> saveGoogleToken(String token, String expiry) async {
+    final parsed = GoogleDriveSession.parseExpiry(expiry);
+    if (expiry.isNotEmpty && parsed == null) {
+      throw const FormatException('La fecha de expiración no es válida.');
+    }
+    final session = GoogleDriveSession(token.trim(), expiresAt: parsed);
+    await googleSessions.save(session);
+    googleSession = session;
+    googleToken = session.isExpired(DateTime.now())
+        ? null
+        : session.accessToken;
   }
 
   Future<String?> getGoogleToken() async {
-    return await secureStorageService.read(Constants.googleDriveTokenExpiry);
+    googleSession = await googleSessions.restore();
+    googleToken = googleSession?.isExpired(DateTime.now()) == true
+        ? null
+        : googleSession?.accessToken;
+    return googleToken;
   }
 
   Future<void> deleteGoogleToken() async {
-    await secureStorageService.delete(Constants.googleDriveTokenExpiry);
+    await googleSessions.delete();
     await Settings.setValue(Constants.googleDriveTokenExpiry, null);
     googleToken = null;
+    googleSession = null;
   }
 
   // Wrapper for the api calls
@@ -370,10 +444,13 @@ class TorboxAPI {
         downloadsPageState?.addItemsToCache([newQueuedTorrent]);
       }
       if (Settings.getValue(
-        Constants.libraryForegroundUpdate,
-        defaultValue: false,
-      )!) {
-        downloadsPageState?.startPeriodicUpdate<Torrent>(data['torrent_id']);
+            Constants.libraryForegroundUpdate,
+            defaultValue: false,
+          )! &&
+          data['torrent_id'] is int) {
+        downloadsPageState?.startPeriodicUpdate<Torrent>(
+          data['torrent_id'] as int,
+        );
       }
     }
     return response;
@@ -884,7 +961,7 @@ class TorboxAPI {
     int? fileId,
     bool? zip,
     IntegrationFileType? type,
-  }) {
+  }) async {
     assert(
       fileId != null || zip != null,
       'Either fileId or zip must be provided',
@@ -892,17 +969,20 @@ class TorboxAPI {
     final String? token;
     switch (integration) {
       case QueueableIntegration.google:
-        token = googleToken;
+        token = await getGoogleToken();
       case QueueableIntegration.onedrive:
       case QueueableIntegration.gofile:
       case QueueableIntegration.onefichier:
         // Only Google Drive has a token available on this device.
         token = null;
     }
-    assert(
-      token != null && token.isNotEmpty,
-      'Token for ${integration.name} is not available',
-    );
+    if (token == null || token.isEmpty) {
+      return TorboxAPIResponse(
+        success: false,
+        error: 'INTEGRATION_AUTH_REQUIRED',
+        detail: 'Conecta el servicio con una credencial vigente antes de enviar archivos.',
+      );
+    }
     return _callApi((api) {
       return switch (integration) {
         QueueableIntegration.google => api.integrations.addToGoogleDrive(

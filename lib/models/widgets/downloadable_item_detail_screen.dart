@@ -2,6 +2,7 @@ import 'package:atba/models/library_items/downloadable_item.dart';
 import 'package:atba/models/torbox_api_response.dart';
 import 'package:atba/models/widgets/downloads_prompt.dart';
 import 'package:atba/services/torbox_service.dart';
+import 'package:atba/services/library_page_state.dart';
 import 'package:atba/screens/jobs_status_page.dart';
 import 'package:atba/services/video_playback_service.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +14,23 @@ import 'package:atba/utils.dart';
 import 'package:iconsx_plus/iconsx_plus.dart';
 import 'package:provider/provider.dart';
 
-class DownloadableItemDetailScreen extends StatelessWidget {
+class DownloadableItemDetailScreen extends StatefulWidget {
   final DownloadableItem item;
   const DownloadableItemDetailScreen({super.key, required this.item});
+
+  @override
+  State<DownloadableItemDetailScreen> createState() =>
+      _DownloadableItemDetailScreenState();
+}
+
+class _DownloadableItemDetailScreenState
+    extends State<DownloadableItemDetailScreen> {
+  DownloadableItem get item {
+    final current = context.read<LibraryPageState?>()?.findItem(
+      widget.item.identity,
+    );
+    return current is DownloadableItem ? current : widget.item;
+  }
 
   IntegrationFileType? _getIntegrationFileType() {
     if (item is Torrent) return IntegrationFileType.torrent;
@@ -26,6 +41,7 @@ class DownloadableItemDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LibraryPageState?>();
     final apiService = Provider.of<TorboxAPI>(context, listen: false);
     final integrationType = _getIntegrationFileType();
 
@@ -85,15 +101,14 @@ class DownloadableItemDetailScreen extends StatelessWidget {
                                           ClipboardData(text: magnet),
                                         );
                                         if (context.mounted) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                'Magnet link copied to clipboard',
-                                              ),
-                                            ),
-                                          );
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Magnet link copied to clipboard',
+                                                  ),
+                                                ),
+                                              );
                                         }
                                       },
                                       child: Text(
@@ -165,9 +180,9 @@ class DownloadableItemDetailScreen extends StatelessWidget {
                               icon: Icon(FontAwesome.google_drive_brand),
                               label: Text("Download with Google Drive"),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.onSecondary,
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .onSecondary,
                               ),
                               onPressed: () async {
                                 final response = await apiService
@@ -288,9 +303,8 @@ class DownloadableItemDetailScreen extends StatelessWidget {
       children: [
         SizedBox(width: 8),
         _buildButton(context, Text("Watch"), Icon(Icons.play_arrow), () async {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Fetching stream URL...')));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Fetching stream URL...')));
           final response = await getDownloadUrl(apiService, file);
           if (response.success && response.data != null) {
             VideoPlaybackService.playURL(context, response.data as String);

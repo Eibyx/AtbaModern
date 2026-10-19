@@ -16,7 +16,7 @@ class DownloadableItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = Provider.of<LibraryPageState>(context);
     final isSelected = state.selectedItems.any(
-      (selectedItem) => selectedItem.id == item.id,
+      (selectedItem) => selectedItem.identity == item.identity,
     );
     final isCensored = state.isTorrentNamesCensored;
 
@@ -27,7 +27,10 @@ class DownloadableItemWidget extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DownloadableItemDetailScreen(item: item),
+            builder: (context) => ChangeNotifierProvider.value(
+              value: state,
+              child: DownloadableItemDetailScreen(item: item),
+            ),
           ),
         );
       }

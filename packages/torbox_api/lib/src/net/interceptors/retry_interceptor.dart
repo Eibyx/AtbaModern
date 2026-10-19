@@ -43,7 +43,19 @@ class RetryInterceptor extends Interceptor {
     }
 
     err.requestOptions._retryAttempt = attempt + 1;
-    await Future.delayed(_computeDelay(attempt, err));
+    final cancelToken = err.requestOptions.cancelToken;
+    if (cancelToken?.isCancelled == true) {
+      handler.next(err);
+      return;
+    }
+    await Future.any([
+      Future<void>.delayed(_computeDelay(attempt, err)),
+      if (cancelToken != null) cancelToken.whenCancel.then<void>((_) {}),
+    ]);
+    if (cancelToken?.isCancelled == true) {
+      handler.next(err);
+      return;
+    }
 
     try {
       // Re-dispatches through the interceptor chain; a further failure
@@ -57,6 +69,9 @@ class RetryInterceptor extends Interceptor {
   }
 
   bool _shouldRetry(DioException err) {
+    // Mutations may have succeeded before a timeout: never duplicate them.
+    if (!{'GET', 'HEAD', 'OPTIONS'}.contains(err.requestOptions.method))
+      return false;
     final statusCode = err.response?.statusCode;
     if (statusCode == null) {
       // Network error, timeout, etc. — retry.
@@ -65,17 +80,16 @@ class RetryInterceptor extends Interceptor {
           err.type == DioExceptionType.receiveTimeout ||
           err.type == DioExceptionType.connectionError;
     }
-    return statusCode == 408 ||
-        statusCode == 429 ||
-        statusCode >= 500;
+    return statusCode == 408 || statusCode == 429 || statusCode >= 500;
   }
 
   Duration _computeDelay(int attempt, DioException err) {
     final jitter = 0.5 + _random.nextDouble(); // 0.5 – 1.5
     var delayMs = baseDelayMs * (1 << attempt) * jitter;
     // Honor the server's back-off request when present (seconds).
-    final retryAfterSecs =
-        int.tryParse(err.response?.headers.value('retry-after') ?? '');
+    final retryAfterSecs = int.tryParse(
+      err.response?.headers.value('retry-after') ?? '',
+    );
     if (retryAfterSecs != null) {
       delayMs = max(delayMs, retryAfterSecs * 1000.0);
     }

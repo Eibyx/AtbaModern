@@ -61,3 +61,9 @@ Git HTTPS de lectura funciona. GitHub API con gh devolvió Forbidden; no implica
 
 Resultados ejecutados y estados finales se mantienen en TEST_REPORT.md y en la sección de resolución que se añadirá a este informe.
 
+
+## Evidencia adicional previa al rediseño
+
+Tras guardar el informe inicial se habilitó acceso: OpenAPI oficial consultado (87 rutas) y colección Postman oficial desde api-docs.torbox.app. Se conserva un extracto y SHA-256 en TORBOX_API_CONTRACT.json. Límite general documentado: 300/min por token; crear torrents no cacheados: 60/h. Los listados usan por defecto limit=1000: se implementará paginación explícita. El progreso de jobs está en rango 0–1, no 0–100. RSS requiere plan Pro y scan_interval se expresa en minutos. /integration/oauth/me y /oauth/{provider}/unregister existen; no se encontró contrato público de renovación local de Google. La verificación HTTP pública no demuestra autenticación ni ejecución en una cuenta.
+
+Baseline ejecutado: 1.277 pruebas del parser y 64 de torbox_api pasan. El primer análisis falló por directorio HOME de solo lectura; se corrigió mediante ANALYZER_STATE_LOCATION_OVERRIDE, sin cambiar HOME. Segundo análisis: 90 diagnósticos heredados (sin errores de compilación, dos warnings). GitHub API ya responde y confirma acceso push/admin; se comprobará la operación de publicación al terminar.

@@ -38,7 +38,9 @@
 import 'package:atba/models/library_items/library_item.dart';
 import 'package:atba/models/torbox_api_response.dart';
 import 'package:atba/services/torbox_service.dart';
+
 import 'downloadable_item.dart';
+
 import 'package:json_annotation/json_annotation.dart';
 part 'webdownload.g.dart';
 
@@ -46,6 +48,9 @@ enum WebDownloadState { downloading, finished, error, unknown }
 
 @JsonSerializable()
 class WebDownload extends DownloadableItem {
+  @override
+  String get itemType => 'webdownload';
+
   final WebDownloadState state;
   final String error;
 

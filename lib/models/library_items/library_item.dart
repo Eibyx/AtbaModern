@@ -5,6 +5,10 @@ import 'package:atba/services/torbox_service.dart';
 abstract class LibraryItem {
   static late TorboxAPI apiService;
 
+  /// IDs are unique only within a TorBox transfer type.
+  String get itemType => runtimeType.toString();
+  String get identity => '$itemType:$id';
+
   final int id;
   final String name;
   final DateTime createdAt;

@@ -18,15 +18,10 @@ DatabaseConnection connect() {
       if (Platform.isAndroid) {
         await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
         final dbFolder = await getApplicationCacheDirectory();
-        final cachebase = p.join(
-          dbFolder.path,
-          'torbox_cache',
-          'cache-db.sqlite',
-        );
-
-        // We can't access /tmp on Android, which sqlite3 would try by default.
-        // Explicitly tell it about the correct temporary directory.
-        sqlite3.tempDirectory = cachebase;
+        // SQLite needs an existing directory, never a database filename.
+        final temp = Directory(p.join(dbFolder.path, 'torbox_cache', 'tmp'));
+        await temp.create(recursive: true);
+        sqlite3.tempDirectory = temp.path;
       }
 
       return NativeDatabase.createBackgroundConnection(await databaseFile);

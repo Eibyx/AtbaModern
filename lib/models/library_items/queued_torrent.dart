@@ -8,6 +8,9 @@ part 'queued_torrent.g.dart';
 
 @JsonSerializable()
 class QueuedTorrent extends LibraryItem {
+  @override
+  String get itemType => 'queuedtorrent';
+
   // Technically not downloadable though
   final String? magnet;
   final String? torrentFileLink;

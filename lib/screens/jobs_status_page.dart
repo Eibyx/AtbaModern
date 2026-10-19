@@ -1,291 +1,201 @@
-import 'package:atba/models/torbox_api_response.dart';
-import 'package:atba/services/jobs_update_service.dart';
+import 'dart:async';
+
+import 'package:atba/services/adaptive_poller.dart';
 import 'package:atba/services/torbox_service.dart';
-import 'package:atba/utils.dart';
-import 'package:atba/config/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:provider/provider.dart';
-import 'package:iconsx_plus/iconsx_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:torbox_api/torbox_api.dart';
 
 class JobsStatusPage extends StatefulWidget {
   const JobsStatusPage({super.key});
-
   @override
   State<JobsStatusPage> createState() => _JobsStatusPageState();
 }
 
-class _JobsStatusPageState extends State<JobsStatusPage> {
-  List<JobQueueItem>? _jobs;
-  List<JobQueueItem>? get _sortedJobs => _getSortedJobs();
-  final Set<JobQueueItem> _selectedJobs = {};
-  bool _isSelecting = false;
-  late final JobsUpdateService updateService;
-
-  static String _selectedSortingOption = Settings.getValue<String>(
-    Constants.jobQueueSelectedSort,
-    defaultValue: "Default",
-  )!;
-
-  static final Map<String, int Function(JobQueueItem, JobQueueItem)>
-  _sortingFunctions = {
-    "Default": (a, b) => 0,
-    "A to Z": (a, b) => -(a.data.fileName ?? a.data.id.toString()).compareTo(
-      b.data.fileName ?? b.data.id.toString(),
-    ),
-    "Z to A": (a, b) => (a.data.fileName ?? a.data.id.toString()).compareTo(
-      b.data.fileName ?? b.data.id.toString(),
-    ),
-    "Newest": (a, b) => -a.data.createdAt.compareTo(b.data.createdAt),
-    "Oldest": (a, b) => a.data.createdAt.compareTo(b.data.createdAt),
-    "Type": (a, b) => a.data.type.compareTo(b.data.type),
-    "Progress": (a, b) => a.data.progress.compareTo(b.data.progress),
-  };
-
-  List<JobQueueItem>? _getSortedJobs() {
-    if (_jobs == null) return null;
-    return _jobs!.toList()..sort(_sortingFunctions[_selectedSortingOption]);
-  }
-
+class _JobsStatusPageState extends State<JobsStatusPage>
+    with WidgetsBindingObserver {
+  late final AdaptivePoller _poller;
+  List<IntegrationJobData>? _jobs;
+  String? _error;
+  final Set<int> _cancelling = {};
   @override
   void initState() {
     super.initState();
-    _fetchJobs();
+    WidgetsBinding.instance.addObserver(this);
+    _poller = AdaptivePoller(
+      poll: _refresh,
+      onError: (_) {
+        if (mounted)
+          setState(
+            () => _error = 'No se pudieron actualizar los trabajos. Se reintentará automáticamente.',
+          );
+      },
+    );
+    _poller.start();
+  }
+
+  Future<bool> _refresh() async {
+    final api = context.read<TorboxAPI>().authenticatedApi;
+    if (api == null) throw StateError('Conecta TorBox primero.');
+    final response = await api.integrations.getAllJobs();
+    if (!response.success)
+      throw StateError('No se pudieron consultar los trabajos.');
+    final jobs = response.data ?? [];
+    jobs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    if (mounted)
+      setState(() {
+        _jobs = jobs;
+        _error = null;
+      });
+    return jobs.any(
+      (j) => !{'completed', 'failed', 'cancelled'}.contains(j.status),
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Jobs Status'),
-        actions: _isSelecting
-            ? [_buildDeleteIcon(), _buildFilterButton()]
-            : [_buildFilterButton()],
-      ),
-      body: _jobs == null
-          ? const Center(child: CircularProgressIndicator())
-          : _jobs!.isEmpty
-          ? const Center(child: Text('No jobs found.'))
-          : ListView.builder(
-              itemCount: _jobs!.length,
-              itemBuilder: (context, index) {
-                final job = _sortedJobs![index];
-                return Container(
-                  color: _selectedJobs.contains(job)
-                      ? Theme.of(context).highlightColor
-                      : Colors.transparent,
-                  child: ListTile(
-                    leading: job.isLoading
-                        ? CircularProgressIndicator()
-                        : getStatusIcon(job.data.status),
-                    title: Text(
-                      job.data.fileName?.split("/").last ??
-                          job.data.id.toString(),
-                    ),
-                    subtitle: job.data.status == JobQueueStatus.uploading
-                        ? LinearProgressIndicator(
-                            value: job.data.progress.toDouble(),
-                          )
-                        : Text(job.data.detail),
-                    trailing: Text(
-                      formatTimeDifference(
-                        DateTime.now().difference(job.data.createdAt),
-                      ),
-                    ),
-                    onTap: () => {
-                      if (_isSelecting)
-                        {
-                          if (_selectedJobs.contains(job))
-                            {
-                              setState(() {
-                                _selectedJobs.remove(job);
-                                if (_selectedJobs.isEmpty) _isSelecting = false;
-                              }),
-                            }
-                          else
-                            {
-                              setState(() {
-                                _selectedJobs.add(job);
-                              }),
-                            },
-                        }
-                      else
-                        {
-                          if (job.data.downloadUrl != null)
-                            launchUrl(Uri.parse(job.data.downloadUrl!)),
-                        },
-                    },
-                    onLongPress: () {
-                      if (_isSelecting) {
-                        if (_selectedJobs.contains(job)) {
-                          setState(() {
-                            _selectedJobs.remove(job);
-                            if (_selectedJobs.isEmpty) _isSelecting = false;
-                          });
-                        } else {
-                          setState(() {
-                            _selectedJobs.add(job);
-                          });
-                        }
-                      } else {
-                        setState(() {
-                          _isSelecting = true;
-                          _selectedJobs.add(job);
-                        });
-                      }
-                    },
-                  ),
-                );
-              },
-            ),
-    );
-  }
-
-  Future<void> _fetchJobs() async {
-    final apiService = Provider.of<TorboxAPI>(context, listen: false);
-    updateService = JobsUpdateService(apiService);
-    final response = await apiService.getAllJobs();
-    setState(() {
-      _jobs = ((response.data ?? []) as List)
-          .map(
-            (jobJson) =>
-                JobQueueItem(data: JobQueueStatusResponse.fromJson(jobJson)),
-          )
-          .toList();
-    });
-    if (_jobs == null) return;
-    _jobs!
-        .where((j) => !JobsUpdateService.doneStatuses.contains(j.data.status))
-        .forEach((j) => startPeriodicUpdate(j.data.id));
-  }
-
-  void startPeriodicUpdate(int jobId) {
-    final stream = updateService.monitorJob(jobId);
-
-    stream.listen((json) {
-      final index = _jobs!.indexWhere((j) => j.data.id == jobId);
-      if (json["type"] == "updating") {
-        setState(() {
-          _jobs![index].setIsLoading(true);
-        });
-
-        return;
-      }
-      // Find the item in temporary list and update it.
-      JobQueueItem updatedJob = JobQueueItem(data: json["updatedItem"]);
-      if (index != -1) {
-        setState(() {
-          _jobs![index] = updatedJob;
-        });
-      } else {
-        setState(() {
-          _jobs!.add(updatedJob);
-        });
-      }
-    });
-  }
-
-  Widget _buildFilterButton() {
-    return MenuAnchor(
-      builder:
-          (BuildContext context, MenuController controlller, Widget? child) {
-            return IconButton(
-              icon: const Icon(Icons.sort),
-              onPressed: () {
-                if (controlller.isOpen) {
-                  controlller.close();
-                } else {
-                  controlller.open();
-                }
-              },
-              tooltip: "Sort downloads",
-            );
-          },
-      menuChildren: List<MenuItemButton>.generate(
-        _sortingFunctions.length,
-        (int index) => MenuItemButton(
-          onPressed: () async {
-            setState(
-              () => _selectedSortingOption = _sortingFunctions.keys.elementAt(
-                index,
-              ),
-            );
-            await Settings.setValue(
-              Constants.jobQueueSelectedSort,
-              _selectedSortingOption,
-            );
-            // Navigator.pop(context);
-          },
-          child: Row(
-            children: [
-              Text(_sortingFunctions.keys.elementAt(index)),
-              if (_selectedSortingOption ==
-                  _sortingFunctions.keys.elementAt(index))
-                Row(
-                  children: [
-                    SizedBox(width: 4),
-                    Icon(
-                      Icons.check,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDeleteIcon() {
-    final apiService = Provider.of<TorboxAPI>(context, listen: false);
-
-    return IconButton(
-      icon: Icon(Icons.delete),
-      onPressed: () async {
-        for (final job in _selectedJobs.toSet()) {
-          await apiService.cancelJobById(job.data.id);
-          setState(() => _jobs!.remove(job));
-        }
-        setState(() {
-          _selectedJobs.clear();
-          _isSelecting = false;
-        });
-      },
-    );
-  }
-
-  Widget getStatusIcon(JobQueueStatus status) {
-    final IconData iconData = getIcon(status);
-    switch (status) {
-      case JobQueueStatus.pending:
-        return Icon(iconData, color: Colors.grey);
-      case JobQueueStatus.completed:
-        return Icon(iconData, color: Colors.green);
-      case JobQueueStatus.failed:
-        return Icon(iconData, color: Colors.red);
-      case JobQueueStatus.uploading:
-        return Icon(iconData, color: Colors.blue);
-      case JobQueueStatus.preparing:
-        return Icon(iconData, color: Colors.grey);
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _poller.start();
+    } else {
+      _poller.pause();
     }
   }
 
-  IconData getIcon(JobQueueStatus status) {
-    return FontAwesome.google_drive_brand;
-  }
-}
-
-class JobQueueItem {
-  final JobQueueStatusResponse data;
-  bool _isLoading = false;
-
-  JobQueueItem({required this.data});
-
-  void setIsLoading(bool val) {
-    _isLoading = val;
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _poller.dispose();
+    super.dispose();
   }
 
-  bool get isLoading => _isLoading;
+  Future<void> _cancel(IntegrationJobData job) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Cancelar la transferencia?'),
+        content: const Text(
+          'Se detendrá este trabajo de integración; los archivos de TorBox se conservan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Volver'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Cancelar trabajo'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _cancelling.add(job.id));
+    try {
+      final response = await context
+          .read<TorboxAPI>()
+          .authenticatedApi!
+          .integrations
+          .cancelJob(job.id);
+      if (!response.success) throw StateError('No se pudo cancelar.');
+      await _poller.refresh();
+    } on Object {
+      if (mounted)
+        setState(
+          () => _error = 'No se pudo cancelar el trabajo. Comprueba su estado antes de reintentar.',
+        );
+    } finally {
+      if (mounted) setState(() => _cancelling.remove(job.id));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text('Trabajos de integración'),
+      actions: [
+        IconButton(
+          tooltip: 'Actualizar',
+          onPressed: _poller.refresh,
+          icon: const Icon(Icons.refresh),
+        ),
+      ],
+    ),
+    body: RefreshIndicator(
+      onRefresh: _poller.refresh,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        itemCount: (_jobs?.length ?? 0) + 1,
+        itemBuilder: (context, index) {
+          if (index == 0)
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                children: [
+                  const Text(
+                    'Progreso de TorBox al servicio remoto. Es independiente de la descarga al teléfono.',
+                  ),
+                  if (_error != null)
+                    Text(
+                      _error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  if (_jobs == null && _error == null)
+                    const LinearProgressIndicator(),
+                  if (_jobs?.isEmpty == true)
+                    const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Text('No hay trabajos de integración.'),
+                    ),
+                ],
+              ),
+            );
+          final job = _jobs![index - 1];
+          final progress = job.progress.isFinite
+              ? job.progress.clamp(0.0, 1.0)
+              : 0.0;
+          final done = {
+            'completed',
+            'failed',
+            'cancelled',
+          }.contains(job.status);
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    job.fileName.isEmpty ? 'Trabajo #${job.id}' : job.fileName,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    '${job.integration} · ${job.status} · ${(progress * 100).toStringAsFixed(1)} %',
+                  ),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(value: progress),
+                  if (job.status == 'failed')
+                    const Text(
+                      'El servicio remoto no completó la transferencia. La conexión local se conserva.',
+                    ),
+                  if (!done)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _cancelling.contains(job.id)
+                            ? null
+                            : () => _cancel(job),
+                        child: const Text('Cancelar trabajo'),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    ),
+  );
 }

@@ -29,6 +29,9 @@ class TorboxCacheInterceptor extends Interceptor {
     final cache = client;
     if (cache == null ||
         options.method.toUpperCase() != 'GET' ||
+        options.queryParameters['bypass_cache'] == true ||
+        options.path.contains('/integration/') ||
+        options.path.contains('/user/') ||
         !_isResolvable(options.responseType) ||
         !(Settings.getValue(Constants.useCache, defaultValue: true) ?? true)) {
       handler.next(options);
@@ -43,6 +46,24 @@ class TorboxCacheInterceptor extends Interceptor {
             entry.key: entry.value.toString(),
         },
       );
+      if (!(options.validateStatus(response.statusCode))) {
+        handler.reject(
+          DioException(
+            requestOptions: options,
+            type: DioExceptionType.badResponse,
+            response: Response<dynamic>(
+              requestOptions: options,
+              statusCode: response.statusCode,
+              data: _body(response, options.responseType),
+              headers: Headers.fromMap({
+                for (final e in response.headers.entries) e.key: [e.value],
+              }),
+            ),
+          ),
+          true,
+        );
+        return;
+      }
       handler.resolve(
         Response<dynamic>(
           data: _body(response, options.responseType),
@@ -76,8 +97,7 @@ class TorboxCacheInterceptor extends Interceptor {
   /// response body there would break the download. Those requests (the
   /// `.torrent` export) therefore always hit the network.
   bool _isResolvable(ResponseType responseType) =>
-      responseType == ResponseType.json ||
-      responseType == ResponseType.plain;
+      responseType == ResponseType.json || responseType == ResponseType.plain;
 
   /// JSON bodies are handed to the API client as decoded maps; plain-text
   /// responses (the XML feed) stay strings; anything else is passed through

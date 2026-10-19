@@ -15,6 +15,9 @@ enum UsenetPostProcessing {
 
 @JsonSerializable()
 class Usenet extends DownloadableItem {
+  @override
+  String get itemType => 'usenet';
+
   Usenet({
     required super.id,
     required super.name,

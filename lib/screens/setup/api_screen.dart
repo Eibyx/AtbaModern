@@ -51,24 +51,20 @@ class ApiKeyScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 final apiKey = _apiKeyController.text.trim();
-                await apiService.saveApiKey(apiKey);
-                final response = await apiService.getUserData();
+                final response = await apiService.validateAndSaveApiKey(apiKey);
+                if (!context.mounted) return;
                 if (apiKey.isNotEmpty && response.success) {
-                  await apiService.saveApiKey(apiKey);
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
                           !kIsWeb &&
-                              (Platform.isAndroid ||
-                                  Platform
-                                      .isIOS) // only IOS and Android have permission-based models
+                              (Platform.isAndroid || Platform.isIOS) // only IOS and Android have permission-based models
                           ? const PermissionScreen()
                           : const HomeScreen(),
                     ),
                   );
                 } else {
-                  apiService.deleteApiKey();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(

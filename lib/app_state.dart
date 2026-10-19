@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:atba/services/torbox_service.dart';
+
 import 'services/shared_prefs_service.dart';
 import 'services/secure_storage_service.dart';
 
@@ -46,7 +47,12 @@ class AppState with ChangeNotifier {
 
   Future<void> updateApiKey(String newApiKey) async {
     try {
-      await secureStorageService.write('api_key', newApiKey);
+      final result = await apiService.validateAndSaveApiKey(newApiKey);
+      if (!result.success) {
+        hasError = true;
+        notifyListeners();
+        return;
+      }
       apiKey = newApiKey;
       notifyListeners();
     } catch (e) {

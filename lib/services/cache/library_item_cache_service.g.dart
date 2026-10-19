@@ -30,7 +30,6 @@ class $LibraryItemCacheTable extends LibraryItemCache
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _itemTypeMeta = const VerificationMeta(
     'itemType',
@@ -128,6 +127,10 @@ class $LibraryItemCacheTable extends LibraryItemCache
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {itemType, itemId},
+  ];
   @override
   LibraryItemEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
