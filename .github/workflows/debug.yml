@@ -70,8 +70,8 @@ jobs:
             unzip -t "$apk" > /dev/null
             "$ATBA_BUILD_TOOLS/apksigner" verify --verbose --print-certs "$apk"
             ATBA_APK_BADGING=$("$ATBA_BUILD_TOOLS/aapt2" dump badging "$apk")
-            printf '%s\n' "$ATBA_APK_BADGING" | head -12
-            printf '%s\n' "$ATBA_APK_BADGING" | grep -q "package: name='com.eibyx.atbamodern.debug'"
+            printf '%s\n' "$ATBA_APK_BADGING" | sed -n '1,12p'
+            printf '%s\n' "$ATBA_APK_BADGING" | grep "package: name='com.eibyx.atbamodern.debug'" > /dev/null
             if [[ "$apk" == *arm64-v8a.apk ]]; then
               ATBA_ABIS=$(unzip -Z -1 "$apk" | sed -n 's@^lib/\([^/]*\)/.*@\1@p' | sort -u)
               test "$ATBA_ABIS" = arm64-v8a
