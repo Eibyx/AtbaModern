@@ -1,4 +1,4 @@
-package com.torbox.atba
+package com.eibyx.atbamodern
 
 import io.flutter.embedding.android.FlutterActivity
 

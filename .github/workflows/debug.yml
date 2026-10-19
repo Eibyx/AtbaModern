@@ -1,130 +1,72 @@
-name: CD
-
+name: ATBA Modern · Validate and APK
 on:
-    push:
-      branches: [ "main" ]
-    pull_request:
-      branches: [ "main" ]
-    workflow_dispatch:
-        inputs:
-          ref:
-            description: 'The branch, tag, or SHA to run the workflow on'
-            required: true
-            default: 'main'
-
+  push:
+    branches: [main, feat/atba-modern-overhaul]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      universal:
+        description: Generate an additional universal debug APK
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: modern-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-    build-debug-android:
-        runs-on: ubuntu-latest
-    
-        steps:
-        - name: Checkout Repository
-          uses: actions/checkout@v4
-    
-        - name: Setup Flutter
-          uses: subosito/flutter-action@v2
-          with:
-            flutter-version: 3.47.5
-    
-        - name: Get Dependencies
-          run: flutter pub get
-    
-        - name: Run build_runner
-          run: flutter pub run build_runner build --delete-conflicting-outputs
-    
-        - name: Setup Java
-          uses: actions/setup-java@v4
-          with:
-            distribution: "temurin"
-            java-version: "17"
-
-        - name: Decode Keystore
-          run: |
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
-          env:
-            ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-    
-        - name: Configure Android Keystore
-          run: echo "${{ secrets.ANDROID_KEYSTORE_PROPERTIES }}" > android/key.properties
-    
-        - name: Build APK
-          run: flutter build apk --debug
-    
-        - name: Upload debug APK
-          uses: actions/upload-artifact@v4
-          with:
-            name: apk-debug
-            path: build/app/outputs/flutter-apk/app-debug.apk
-
-    build-debug-ios:
-        runs-on: macos-latest
-    
-        steps:
-        - name: Checkout Repository
-          uses: actions/checkout@v4
-    
-        - name: Setup Flutter
-          uses: subosito/flutter-action@v2
-          with:
-            flutter-version: 3.47.5
-    
-        - name: Get Dependencies
-          run: flutter pub get
-    
-        - name: Run build_runner
-          run: flutter pub run build_runner build --delete-conflicting-outputs
-    
-        - name: Build iOS
-          run: |
-            flutter build ios --debug --no-codesign
-            cd build/ios/iphoneos
-            mkdir Payload
-            cd Payload
-            ln -s ../Runner.app
-            cd ..
-            zip -r debug.ipa Payload
-    
-        - name: Upload debug iOS
-          uses: actions/upload-artifact@v4
-          with:
-            name: ipa-debug
-            path:  build/ios/iphoneos/debug.ipa
-
-    test-packages:
-        name: Test ${{ matrix.package }}
-        runs-on: ubuntu-latest
-
-        strategy:
-            fail-fast: false
-            matrix:
-                package:
-                    - torbox_api
-                    - parse_torrent_title
-
-        steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v4
-
-            - name: Setup Flutter
-              uses: subosito/flutter-action@v2
-              with:
-                  flutter-version: 3.47.5
-
-            - name: Get Dependencies
-              working-directory: packages/${{ matrix.package }}
-              run: flutter pub get
-
-            - name: Run build_runner # only for torbox_api
-              shell: bash
-              run: |
-                for package in torbox_api; do
-                  echo "Running build_runner for $package"
-                  (
-                    cd "packages/$package"
-                    dart pub get
-                    dart run build_runner build
-                  )
-                done
-
-            - name: Run Tests
-              working-directory: packages/${{ matrix.package }}
-              run: flutter test
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+      - name: Native SQLite for persistence and migration tests
+        run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
+      - name: Generate, format, analyze and test app and packages
+        run: bash tool/ci_verify.sh
+  android:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Resolve dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Compile installable ARM64 test APK (standard Android debug signing)
+        run: |
+          flutter build apk --debug --target-platform android-arm64
+          mkdir -p artifacts
+          cp build/app/outputs/flutter-apk/app-debug.apk artifacts/ATBA-Modern-arm64-v8a.apk
+      - name: Compile universal test APK when requested
+        if: github.event_name == 'workflow_dispatch' && inputs.universal
+        run: |
+          flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
+          cp build/app/outputs/flutter-apk/app-debug.apk artifacts/ATBA-Modern-universal.apk
+      - name: Verify APK files and record checksums
+        run: |
+          test -s artifacts/ATBA-Modern-arm64-v8a.apk
+          for apk in artifacts/*.apk; do unzip -t "$apk" > /dev/null; done
+          sha256sum artifacts/*.apk > artifacts/SHA256SUMS.txt
+          ls -lh artifacts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATBA-Modern-Android-${{ github.sha }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14
