@@ -2,6 +2,7 @@ name: ATBA Modern · Validate and APK
 on:
   push:
     branches: [main, feat/atba-modern-overhaul]
+    paths-ignore: ["**/*.md", "docs/**"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -21,11 +22,12 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - uses: actions/cache@v4
         with:
-          flutter-version: 3.47.5
-          channel: stable
-          cache: true
+          path: ${{ runner.temp }}/atba-flutter
+          key: flutter-source-${{ runner.os }}-6a19cca56475dbfba1478ee68d7bd0c2ef891da1
+      - name: Bootstrap pinned official Flutter SDK
+        run: bash tool/setup_flutter.sh "$RUNNER_TEMP/atba-flutter"
       - name: Native SQLite for persistence and migration tests
         run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
       - name: Generate, format, analyze and test app and packages
@@ -40,11 +42,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: subosito/flutter-action@v2
+      - uses: actions/cache@v4
         with:
-          flutter-version: 3.47.5
-          channel: stable
-          cache: true
+          path: ${{ runner.temp }}/atba-flutter
+          key: flutter-source-${{ runner.os }}-6a19cca56475dbfba1478ee68d7bd0c2ef891da1
+      - name: Bootstrap pinned official Flutter SDK
+        run: bash tool/setup_flutter.sh "$RUNNER_TEMP/atba-flutter"
       - uses: gradle/actions/setup-gradle@v4
       - name: Resolve dependencies
         run: flutter pub get --enforce-lockfile

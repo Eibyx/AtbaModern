@@ -28,11 +28,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: subosito/flutter-action@v2
+      - uses: actions/cache@v4
         with:
-          flutter-version: 3.47.5
-          channel: stable
-          cache: true
+          path: ${{ runner.temp }}/atba-flutter
+          key: flutter-source-${{ runner.os }}-6a19cca56475dbfba1478ee68d7bd0c2ef891da1
+      - name: Bootstrap pinned official Flutter SDK
+        run: bash tool/setup_flutter.sh "$RUNNER_TEMP/atba-flutter"
       - name: SQLite test dependency
         run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
       - name: All required checks

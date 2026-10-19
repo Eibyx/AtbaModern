@@ -93,7 +93,7 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: fix-notification-uri-separator
+      ref: "4d2bb37bab9929a7a90084e896de3f84e0dd363f"
       resolved-ref: "4d2bb37bab9929a7a90084e896de3f84e0dd363f"
       url: "https://github.com/781flyingdutchman/background_downloader.git"
     source: git
@@ -234,6 +234,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  cupertino_icons:
+    dependency: "direct main"
+    description:
+      name: cupertino_icons
+      sha256: "41e005c33bd814be4d3096aff55b1908d419fde52ca656c8c47719ec745873cd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.9"
   dart_style:
     dependency: transitive
     description:
@@ -555,7 +563,7 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: nested
+      ref: b795ae30565eb4c499a66abeb0fe8dd665b0b756
       resolved-ref: b795ae30565eb4c499a66abeb0fe8dd665b0b756
       url: "https://github.com/agersant/flutter_settings_screens.git"
     source: git
@@ -626,14 +634,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
-  hive_ce:
-    dependency: transitive
-    description:
-      name: hive_ce
-      sha256: "650b64282b7ea664ea58a08492d2b163ac6dc6d0ef552d0d77aac6678e1518e9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.20.0"
   hooks:
     dependency: transitive
     description:
@@ -674,30 +674,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
-  http_cache_file_store:
-    dependency: "direct main"
-    description:
-      name: http_cache_file_store
-      sha256: b83bc178226d82a52f56b97801639ff8d94caeaf5464d25cc96082015111f375
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
-  http_cache_hive_store:
-    dependency: "direct main"
-    description:
-      name: http_cache_hive_store
-      sha256: "37d9f9ca8ec8bc867e50a08afab28f24ab41f86243477f058382d72c848dd3dc"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.1.1"
-  http_cache_sembast_store:
-    dependency: "direct main"
-    description:
-      name: http_cache_sembast_store
-      sha256: "77e96334f59d8c948de35ec12b01b62de8a306f4062070f2df21baae48bc0b75"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   http_multi_server:
     dependency: transitive
     description:
@@ -730,14 +706,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
-  idb_shim:
-    dependency: transitive
-    description:
-      name: idb_shim
-      sha256: "6a478bf0928fa954512f2a1e7e56f09e2fb2e3e7d183eb051a59b5d6b39ec16f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.9.9"
   image:
     dependency: transitive
     description:
@@ -754,14 +722,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
-  isolate_channel:
-    dependency: transitive
-    description:
-      name: isolate_channel
-      sha256: a9d3d620695bc984244dafae00b95e4319d6974b2d77f4b9e1eb4f2efe099094
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.6.1"
   jni:
     dependency: transitive
     description:
@@ -1273,22 +1233,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.6"
-  sembast:
-    dependency: transitive
-    description:
-      name: sembast
-      sha256: a976f04d492b82b06c74b3c654795ca5bbf9b670468081a339f6035f121359a3
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.8.11"
-  sembast_web:
-    dependency: transitive
-    description:
-      name: sembast_web
-      sha256: "0dc954ffa88ae75958f4750892e86b29289bb1d0cb16b8f5b27b9fdb84d5d2ee"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.6"
   shared_preferences:
     dependency: "direct main"
     description:

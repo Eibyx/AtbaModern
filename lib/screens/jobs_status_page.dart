@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:atba/services/adaptive_poller.dart';
+import 'package:atba/services/local_event_notifier.dart';
 import 'package:atba/services/torbox_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ class _JobsStatusPageState extends State<JobsStatusPage>
   late final AdaptivePoller _poller;
   List<IntegrationJobData>? _jobs;
   String? _error;
+  final LocalEventNotifier _events = LocalEventNotifier();
   final Set<int> _cancelling = {};
   @override
   void initState() {
@@ -25,10 +27,11 @@ class _JobsStatusPageState extends State<JobsStatusPage>
     _poller = AdaptivePoller(
       poll: _refresh,
       onError: (_) {
-        if (mounted)
+        if (mounted) {
           setState(
             () => _error = 'No se pudieron actualizar los trabajos. Se reintentará automáticamente.',
           );
+        }
       },
     );
     _poller.start();
@@ -38,15 +41,33 @@ class _JobsStatusPageState extends State<JobsStatusPage>
     final api = context.read<TorboxAPI>().authenticatedApi;
     if (api == null) throw StateError('Conecta TorBox primero.');
     final response = await api.integrations.getAllJobs();
-    if (!response.success)
+    if (!response.success) {
       throw StateError('No se pudieron consultar los trabajos.');
+    }
     final jobs = response.data ?? [];
     jobs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    if (mounted)
+    if (!mounted) return false;
+    final previous = {
+      for (final job in _jobs ?? <IntegrationJobData>[]) job.id: job.status,
+    };
+    for (final job in jobs) {
+      if (previous.containsKey(job.id) &&
+          previous[job.id] != job.status &&
+          {'completed', 'failed'}.contains(job.status)) {
+        await _events.show(
+          id: job.id,
+          title:
+              '${job.integration} · ${job.status == 'completed' ? 'Transferencia completada' : 'Transferencia fallida'}',
+          body: 'Trabajo de integración #${job.id}',
+        );
+      }
+    }
+    if (mounted) {
       setState(() {
         _jobs = jobs;
         _error = null;
       });
+    }
     return jobs.any(
       (j) => !{'completed', 'failed', 'cancelled'}.contains(j.status),
     );
@@ -99,10 +120,11 @@ class _JobsStatusPageState extends State<JobsStatusPage>
       if (!response.success) throw StateError('No se pudo cancelar.');
       await _poller.refresh();
     } on Object {
-      if (mounted)
+      if (mounted) {
         setState(
           () => _error = 'No se pudo cancelar el trabajo. Comprueba su estado antes de reintentar.',
         );
+      }
     } finally {
       if (mounted) setState(() => _cancelling.remove(job.id));
     }
@@ -127,7 +149,7 @@ class _JobsStatusPageState extends State<JobsStatusPage>
         padding: const EdgeInsets.all(16),
         itemCount: (_jobs?.length ?? 0) + 1,
         itemBuilder: (context, index) {
-          if (index == 0)
+          if (index == 0) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Column(
@@ -152,6 +174,7 @@ class _JobsStatusPageState extends State<JobsStatusPage>
                 ],
               ),
             );
+          }
           final job = _jobs![index - 1];
           final progress = job.progress.isFinite
               ? job.progress.clamp(0.0, 1.0)

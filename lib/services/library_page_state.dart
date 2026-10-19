@@ -9,6 +9,7 @@ import 'package:atba/models/library_items/usenet.dart';
 import 'package:atba/models/library_items/webdownload.dart';
 import 'package:atba/models/torbox_api_response.dart';
 import 'package:atba/services/adaptive_poller.dart';
+import 'package:atba/services/local_event_notifier.dart';
 import 'package:atba/services/cache/library_item_cache_service.dart';
 import 'package:atba/services/torbox_service.dart';
 import 'package:atba/services/torrent_name_parser.dart';
@@ -21,6 +22,7 @@ import 'package:provider/provider.dart';
 class LibraryPageState extends ChangeNotifier with WidgetsBindingObserver {
   final TorboxAPI apiService;
   final LibraryItemCacheService _cacheService;
+  final LocalEventNotifier _events = LocalEventNotifier();
   late final AdaptivePoller _poller;
   late final Future<void> _initFuture;
   Future<void>? _refreshing;
@@ -33,6 +35,9 @@ class LibraryPageState extends ChangeNotifier with WidgetsBindingObserver {
   bool _firstView = false;
   bool isLoading = true;
   String? errorMessage;
+  String? actionErrorMessage;
+  bool _acting = false;
+  bool get isActing => _acting;
   DateTime? lastUpdated;
   bool get isStale => lastUpdated == null || errorMessage != null;
   bool get isRefreshing => _refreshing != null;
@@ -61,8 +66,9 @@ class LibraryPageState extends ChangeNotifier with WidgetsBindingObserver {
     _poller = AdaptivePoller(
       poll: () async {
         await refreshAll();
-        if (_failedCycle)
+        if (_failedCycle) {
           throw StateError('No se pudo actualizar la biblioteca.');
+        }
         return _libraryItems.any(
           (item) => item.active && !item.downloadFinished,
         );
@@ -128,12 +134,14 @@ class LibraryPageState extends ChangeNotifier with WidgetsBindingObserver {
     final seen = <int>{};
     for (var offset = 0; ; offset += pageSize) {
       final response = await fetch(offset, pageSize);
-      if (!response.success)
+      if (!response.success) {
         throw StateError('TorBox no respondió correctamente.');
+      }
       final data = response.data;
       if (data == null) break;
-      if (data is! List)
+      if (data is! List) {
         throw const FormatException('Lista de TorBox no válida.');
+      }
       var added = 0;
       for (final raw in data) {
         final row = Map<String, dynamic>.from(raw as Map);
@@ -146,8 +154,9 @@ class LibraryPageState extends ChangeNotifier with WidgetsBindingObserver {
       if (data.length < pageSize) break;
       // A server ignoring offset must not cause an infinite request loop.
       if (added == 0) throw StateError('La paginación de TorBox no avanzó.');
-      if (_disposed || !_foreground)
+      if (_disposed || !_foreground) {
         throw StateError('Actualización en pausa.');
+      }
       // Bound burst rate even for very large accounts (official: 300/min).
       await Future<void>.delayed(const Duration(seconds: 1));
     }
@@ -163,6 +172,7 @@ class LibraryPageState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> _refresh() async {
+    final previous = List<LibraryItem>.of(_libraryItems);
     var failures = 0;
     Future<void> category<T extends LibraryItem>(
       Future<TorboxAPIResponse> Function(int, int) fetch,
@@ -219,6 +229,8 @@ class LibraryPageState extends ChangeNotifier with WidgetsBindingObserver {
         ? 'No se pudieron actualizar $failures categorías. Se conservan los datos anteriores; se reintentará automáticamente.'
         : null;
     if (!_failedCycle) lastUpdated = DateTime.now();
+    await _events.transfers(previous, List.of(_libraryItems));
+    if (_disposed) return;
     isLoading = false;
     // Selection tracks identity, not obsolete instances from the prior poll.
     final keys = selectedItems.map((item) => item.identity).toSet();
@@ -236,15 +248,17 @@ class LibraryPageState extends ChangeNotifier with WidgetsBindingObserver {
     return null;
   }
 
-  Future<void> resetForAccountChange() async {
+  Future<void> resetForAccountChange({bool resume = true}) async {
     _poller.pause();
     await _refreshing;
     await _cacheService.clearCache();
     _libraryItems.clear();
     clearSelection();
     lastUpdated = null;
-    if (apiService.hasApiKey) _updatePolling();
+    if (resume && apiService.hasApiKey) _updatePolling();
   }
+
+  void resumeAfterAccountChange() => _updatePolling();
 
   void guardedNotifyListeners() {
     if (!_disposed) notifyListeners();
@@ -403,29 +417,41 @@ class LibraryPageState extends ChangeNotifier with WidgetsBindingObserver {
     Future<TorboxAPIResponse?> Function(LibraryItem) action, {
     bool delete = false,
   }) async {
-    final successful = <LibraryItem>[];
-    for (final item in List.of(selectedItems)) {
-      if (_disposed) return;
-      try {
-        final response = await action(item);
-        if (response?.success == true) {
-          successful.add(item);
-        } else if (response != null) {
-          errorMessage =
-              'No se pudo completar la operación sobre algunos elementos.';
+    if (_acting || _disposed) return;
+    _acting = true;
+    actionErrorMessage = null;
+    guardedNotifyListeners();
+    var failed = 0;
+    try {
+      final successful = <LibraryItem>[];
+      for (final item in List.of(selectedItems)) {
+        if (_disposed) return;
+        try {
+          final response = await action(item);
+          if (response?.success == true) {
+            successful.add(item);
+          } else if (response != null) {
+            failed++;
+          }
+        } on Object {
+          failed++;
         }
-      } on Object {
-        errorMessage =
-            'Error de conexión. Los elementos afectados se conservan.';
       }
+      if (delete) {
+        await _cacheService.deleteLibraryItems(successful);
+        final keys = successful.map((i) => i.identity).toSet();
+        _libraryItems.removeWhere((i) => keys.contains(i.identity));
+      }
+      clearSelection();
+      await refreshAll();
+      if (failed > 0) {
+        actionErrorMessage =
+            'No se completaron $failed operaciones. Los elementos afectados se conservan.';
+      }
+    } finally {
+      _acting = false;
+      guardedNotifyListeners();
     }
-    if (delete) {
-      await _cacheService.deleteLibraryItems(successful);
-      final keys = successful.map((i) => i.identity).toSet();
-      _libraryItems.removeWhere((i) => keys.contains(i.identity));
-    }
-    clearSelection();
-    await refreshAll();
   }
 
   Future<void> deleteSelectedItems() =>

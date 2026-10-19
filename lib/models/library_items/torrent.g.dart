@@ -47,12 +47,12 @@ Torrent _$TorrentFromJson(Map<String, dynamic> json) =>
         longTermSeeding: json['longTermSeeding'] as bool,
         trackerMessage: json['trackerMessage'] as String?,
       )
-      ..status = $enumDecode(_$TorrentStatusEnumMap, json['status'])
       ..itemStatus = $enumDecodeNullable(
         _$DownloadableItemStatusEnumMap,
         json['itemStatus'],
       )
-      ..errorMessage = json['errorMessage'] as String?;
+      ..errorMessage = json['errorMessage'] as String?
+      ..status = $enumDecode(_$TorrentStatusEnumMap, json['status']);
 
 Map<String, dynamic> _$TorrentToJson(Torrent instance) => <String, dynamic>{
   'id': instance.id,
@@ -73,6 +73,8 @@ Map<String, dynamic> _$TorrentToJson(Torrent instance) => <String, dynamic>{
   'downloadFinished': instance.downloadFinished,
   'inactiveCheck': instance.inactiveCheck,
   'availability': instance.availability,
+  'itemStatus': _$DownloadableItemStatusEnumMap[instance.itemStatus],
+  'errorMessage': instance.errorMessage,
   'files': instance.files,
   'hash': instance.hash,
   'magnet': instance.magnet,
@@ -90,15 +92,6 @@ Map<String, dynamic> _$TorrentToJson(Torrent instance) => <String, dynamic>{
   'longTermSeeding': instance.longTermSeeding,
   'trackerMessage': instance.trackerMessage,
   'status': _$TorrentStatusEnumMap[instance.status]!,
-  'itemStatus': _$DownloadableItemStatusEnumMap[instance.itemStatus],
-  'errorMessage': instance.errorMessage,
-};
-
-const _$TorrentStatusEnumMap = {
-  TorrentStatus.idle: 'idle',
-  TorrentStatus.loading: 'loading',
-  TorrentStatus.success: 'success',
-  TorrentStatus.error: 'error',
 };
 
 const _$DownloadableItemStatusEnumMap = {
@@ -106,4 +99,11 @@ const _$DownloadableItemStatusEnumMap = {
   DownloadableItemStatus.loading: 'loading',
   DownloadableItemStatus.success: 'success',
   DownloadableItemStatus.error: 'error',
+};
+
+const _$TorrentStatusEnumMap = {
+  TorrentStatus.idle: 'idle',
+  TorrentStatus.loading: 'loading',
+  TorrentStatus.success: 'success',
+  TorrentStatus.error: 'error',
 };

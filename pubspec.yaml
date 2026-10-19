@@ -12,6 +12,7 @@ dependencies:
   async: ^2.13.0
   build_runner: ^2.11.0
   collection: ^1.19.0
+  cupertino_icons: ^1.0.8
   crypto: ^3.0.6
   dartz: ^0.10.1
   dio: ^5.9.0
@@ -31,15 +32,12 @@ dependencies:
   flutter_settings_screens: 
     git:
       url: https://github.com/agersant/flutter_settings_screens.git
-      ref: nested
+      ref: b795ae30565eb4c499a66abeb0fe8dd665b0b756
   flutter_speed_dial: ^7.0.0
   http: ^1.4.0
   http_cache_client: ^1.0.2
   http_cache_core: ^1.1.3
   http_cache_drift_store: ^7.0.0
-  http_cache_file_store: ^2.0.1
-  http_cache_hive_store: ^5.0.1
-  http_cache_sembast_store: ^1.0.0
   icon_craft: ^0.1.1
   json_annotation: ^4.12.0
   listen_sharing_intent: ^1.9.2
@@ -57,7 +55,7 @@ dependencies:
   background_downloader:
     git:
       url: https://github.com/781flyingdutchman/background_downloader.git
-      ref: fix-notification-uri-separator
+      ref: 4d2bb37bab9929a7a90084e896de3f84e0dd363f
   media_kit_video: ^2.0.1
   media_kit: ^1.2.6
   media_kit_libs_video: ^1.0.7

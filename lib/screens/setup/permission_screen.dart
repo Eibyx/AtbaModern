@@ -8,7 +8,7 @@ class PermissionScreen extends StatefulWidget {
   const PermissionScreen({super.key});
 
   @override
-  _PermissionScreenState createState() => _PermissionScreenState();
+  State<PermissionScreen> createState() => _PermissionScreenState();
 }
 
 class _PermissionScreenState extends State<PermissionScreen> {
@@ -78,6 +78,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
                             onPressed: () async {
                               bool granted = await _permissionModel
                                   .grantPermission(perm['permission'], context);
+                              if (!context.mounted) return;
                               if (granted) {
                                 setState(() {
                                   _grantedPermissions[perm['title']] = true;

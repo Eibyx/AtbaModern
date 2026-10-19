@@ -29,14 +29,20 @@ class GoogleDriveSession {
         uri.host != 'torbox.app' ||
         uri.port != 443 ||
         uri.userInfo.isNotEmpty ||
-        uri.path != '/oauth/google/success')
+        uri.path != '/oauth/google/success') {
       return null;
+    }
+    if (uri.queryParametersAll['token']?.length != 1 ||
+        (uri.queryParametersAll['expires_at']?.length ?? 0) > 1) {
+      return null;
+    }
     final token = uri.queryParameters['token']?.trim();
     if (token == null || token.isEmpty) return null;
     final rawExpiry = uri.queryParameters['expires_at'];
     final expiry = parseExpiry(rawExpiry);
-    if (rawExpiry != null && rawExpiry.isNotEmpty && expiry == null)
+    if (rawExpiry != null && rawExpiry.isNotEmpty && expiry == null) {
       return null;
+    }
     return GoogleDriveSession(token, expiresAt: expiry);
   }
 }
@@ -72,8 +78,13 @@ class GoogleDriveSessionStore {
     final record = await storage.read(recordKey);
     if (record != null) {
       final json = jsonDecode(record) as Map<String, dynamic>;
+      if (json['version'] != 1) {
+        throw const FormatException('Formato de sesión no compatible.');
+      }
       final token = json['access_token'] as String?;
-      if (token == null || token.isEmpty) return null;
+      if (token == null || token.isEmpty) {
+        throw const FormatException('Sesión de Google incompleta.');
+      }
       return GoogleDriveSession(
         token,
         expiresAt: GoogleDriveSession.parseExpiry(

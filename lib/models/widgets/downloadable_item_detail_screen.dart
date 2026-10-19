@@ -306,6 +306,7 @@ class _DownloadableItemDetailScreenState
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text('Fetching stream URL...')));
           final response = await getDownloadUrl(apiService, file);
+          if (!context.mounted) return;
           if (response.success && response.data != null) {
             VideoPlaybackService.playURL(context, response.data as String);
           } else {
@@ -323,6 +324,7 @@ class _DownloadableItemDetailScreenState
         SizedBox(width: 8),
         _buildButton(context, Text("Copy link"), Icon(Icons.copy), () async {
           final link = await getDownloadUrl(apiService, file);
+          if (!context.mounted) return;
           if (link.success && link.data != null) {
             Clipboard.setData(ClipboardData(text: link.data as String));
             ScaffoldMessenger.of(
@@ -354,6 +356,7 @@ class _DownloadableItemDetailScreenState
             return;
           }
           final result = await item.downloadFile(file);
+          if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(

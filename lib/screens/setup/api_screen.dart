@@ -1,86 +1,115 @@
-import 'dart:io';
-
-import 'package:atba/screens/home_page.dart';
-import 'package:flutter/foundation.dart';
+import 'package:atba/services/torbox_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
-import 'permission_screen.dart';
-
-import 'package:atba/services/torbox_service.dart';
-
 class ApiKeyScreen extends StatelessWidget {
-  final TextEditingController _apiKeyController = TextEditingController();
+  const ApiKeyScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: SafeArea(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.all(28),
+            children: [
+              Icon(
+                Icons.cloud_outlined,
+                size: 64,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'ATBA Modern',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Administra tu cuenta TorBox. Tu API key se comprueba antes de guardarse en almacenamiento seguro.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              const ApiCredentialForm(),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
 
-  final _storage = const FlutterSecureStorage();
+class ApiCredentialForm extends StatefulWidget {
+  const ApiCredentialForm({super.key});
+  @override
+  State<ApiCredentialForm> createState() => _ApiCredentialFormState();
+}
 
-  ApiKeyScreen({super.key});
+class _ApiCredentialFormState extends State<ApiCredentialForm> {
+  final _controller = TextEditingController();
+  bool _busy = false;
+  String? _message;
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
-  Future<void> saveApiKey(String apiKey) async {
-    await _storage.write(key: 'api_key', value: apiKey);
+  Future<void> _save() async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _message = null;
+    });
+    try {
+      final result = await context.read<TorboxAPI>().validateAndSaveApiKey(
+        _controller.text,
+      );
+      if (!mounted) return;
+      setState(
+        () => _message = result.success
+            ? 'API key verificada y guardada.'
+            : result.detailOrUnknown,
+      );
+      if (result.success) _controller.clear();
+    } on Object {
+      if (mounted) {
+        setState(
+          () => _message = 'No se pudo comprobar la credencial. Tu sesión anterior se conserva.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
-    final apiService = Provider.of<TorboxAPI>(context, listen: false);
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Welcome!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            const Text('Please provide your API key to continue.'),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _apiKeyController,
-              decoration: const InputDecoration(
-                labelText: 'API Key',
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
-              enableSuggestions: false,
-              autocorrect: false,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                final apiKey = _apiKeyController.text.trim();
-                final response = await apiService.validateAndSaveApiKey(apiKey);
-                if (!context.mounted) return;
-                if (apiKey.isNotEmpty && response.success) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          !kIsWeb &&
-                              (Platform.isAndroid || Platform.isIOS) // only IOS and Android have permission-based models
-                          ? const PermissionScreen()
-                          : const HomeScreen(),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        apiKey.isNotEmpty
-                            ? (response.detailOrUnknown)
-                            : 'API Key is required!',
-                      ),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Continue'),
-            ),
-          ],
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      TextField(
+        controller: _controller,
+        enabled: !_busy,
+        obscureText: true,
+        enableSuggestions: false,
+        autocorrect: false,
+        onSubmitted: (_) => _save(),
+        decoration: const InputDecoration(
+          labelText: 'API key de TorBox',
+          prefixIcon: Icon(Icons.key_outlined),
         ),
       ),
-    );
-  }
+      const SizedBox(height: 16),
+      FilledButton(
+        onPressed: _busy ? null : _save,
+        child: Text(_busy ? 'Verificando…' : 'Verificar y guardar'),
+      ),
+      if (_message != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: Text(_message!),
+        ),
+    ],
+  );
 }

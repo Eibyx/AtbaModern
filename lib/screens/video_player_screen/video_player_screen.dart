@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:atba/screens/video_player_screen/desktop_video_player.dart';
@@ -17,6 +18,7 @@ class VideoPlayerScreen extends StatefulWidget {
 }
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+  StreamSubscription<String>? _playerErrors;
   late final player = Player(configuration: PlayerConfiguration(libass: true));
   late final controller = VideoController(player);
   late final GlobalKey<VideoState> key = GlobalKey<VideoState>();
@@ -25,7 +27,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   void initState() {
     super.initState();
     player.open(Media(widget.url));
-    player.stream.error.listen((error) => debugPrint(error));
+    _playerErrors = player.stream.error.listen((_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No se pudo reproducir el archivo. Comprueba el enlace y el formato.',
+            ),
+          ),
+        );
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
         key.currentState?.enterFullscreen();
@@ -35,6 +47,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   @override
   void dispose() {
+    _playerErrors?.cancel();
     player.dispose();
     super.dispose();
   }

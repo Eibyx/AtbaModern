@@ -16,3 +16,7 @@ Auditoría base guardada antes de refactorizar; ver AUDIT_REPORT.md. Trabajo sob
 
 Las correcciones críticas y sus regresiones tienen prioridad. Las integraciones que dependan de especificaciones inaccesibles, credenciales o teléfono se registrarán como pendientes sin detener trabajo independiente. No habrá pantallas vacías ni botones de funciones simuladas. Se actualizarán los estados conforme se comprueben resultados; no se afirmará aceptación física A–E con pruebas unitarias solamente.
 
+
+## Desacoplamiento del catálogo
+
+Antes de retirar el flujo anterior se enumeraron sus imports entrantes. Watch, Details (catálogo), configuración Stremio/Torrentio, los cinco servicios de addons y los formularios/tablas antiguos solo se referenciaban entre sí y desde las pantallas sustituidas. No quedaban importadores externos en lib. Se retiró ese subgrafo, conservado en el historial Git, después de implementar sus equivalentes administrativos. Se mantienen el reproductor, apertura de archivos, modelos TorBox y ambos paquetes internos. Esto evita conservar pantallas duplicadas que escribían credenciales o gestionaban suscripciones con el flujo anterior.

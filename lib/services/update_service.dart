@@ -34,8 +34,9 @@ class UpdateService {
           ),
           _ => throw UnsupportedError('Tipo de transferencia no soportado.'),
         };
-        if (!response.success || response.data == null)
+        if (!response.success || response.data == null) {
           throw StateError('Actualización temporalmente no disponible.');
+        }
         final json = Map<String, dynamic>.from(response.data as Map);
         final DownloadableItem item = switch (T) {
           const (Torrent) => Torrent.fromJson(json),

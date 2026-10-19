@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:atba/services/google_drive_session.dart';
 import 'package:atba/services/torbox_service.dart';
 import 'package:flutter/foundation.dart';
@@ -19,7 +21,43 @@ class GoogleDriveIntegrationSection extends StatefulWidget {
 }
 
 class _GoogleDriveIntegrationSectionState
-    extends State<GoogleDriveIntegrationSection> {
+    extends State<GoogleDriveIntegrationSection>
+    with WidgetsBindingObserver {
+  Timer? _expiryTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _scheduleExpiry();
+  }
+
+  void _scheduleExpiry() {
+    _expiryTimer?.cancel();
+    final expiry = widget.apiService.googleSession?.expiresAt;
+    if (expiry == null) return;
+    final delay = expiry.difference(DateTime.now());
+    if (delay.isNegative) return;
+    _expiryTimer = Timer(delay + const Duration(milliseconds: 100), () {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _scheduleExpiry();
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _expiryTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   bool _busy = false;
   String? _error;
   static final _oauthUrl = Uri.parse(
@@ -28,13 +66,30 @@ class _GoogleDriveIntegrationSectionState
 
   Future<void> _save(String value, String expiry) async {
     if (_busy) return;
+    if (value.trim().isEmpty) {
+      setState(() => _error = 'Introduce una credencial de Google.');
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      await widget.apiService.saveGoogleToken(value, expiry);
+      final uri = Uri.tryParse(value.trim());
+      if (uri?.scheme == 'https' || uri?.scheme == 'http') {
+        final session = GoogleDriveSession.fromCallback(uri!);
+        if (session == null) {
+          throw const FormatException('URL de autorización no válida.');
+        }
+        await widget.apiService.saveGoogleToken(
+          session.accessToken,
+          session.expiresAt?.toIso8601String() ?? '',
+        );
+      } else {
+        await widget.apiService.saveGoogleToken(value, expiry);
+      }
       widget.googleTokenController.clear();
+      _scheduleExpiry();
     } on Exception {
       _error = 'No se pudo guardar la credencial de Google de forma segura.';
     } finally {
@@ -59,6 +114,8 @@ class _GoogleDriveIntegrationSectionState
       subtitle: Text(status),
       childrenPadding: const EdgeInsets.all(16),
       children: [
+        if (widget.apiService.googleSessionError != null)
+          Text(widget.apiService.googleSessionError!),
         const Text(
           'La sesión se conserva en almacenamiento seguro. Los errores temporales de red no la eliminan. La validez real se comprueba al realizar una transferencia.',
         ),
@@ -94,13 +151,22 @@ class _GoogleDriveIntegrationSectionState
           ),
         ),
         const SizedBox(height: 12),
+        TextButton.icon(
+          onPressed: () =>
+              launchUrl(_oauthUrl, mode: LaunchMode.externalApplication),
+          icon: const Icon(Icons.open_in_browser),
+          label: const Text('Autorizar desde el navegador'),
+        ),
+        const Text(
+          'Si Google rechaza el inicio integrado, autoriza desde el navegador y pega la URL de éxito o el token de forma manual.',
+        ),
         TextField(
           controller: widget.googleTokenController,
           obscureText: true,
           enableSuggestions: false,
           autocorrect: false,
           decoration: const InputDecoration(
-            labelText: 'Token manual de Google',
+            labelText: 'Token o URL de autorización de Google',
             helperText: 'Sin fecha conocida se mostrará como no verificado.',
           ),
         ),
@@ -147,11 +213,12 @@ class _GoogleDriveIntegrationSectionState
                       await widget.apiService.deleteGoogleToken();
                       if (mounted) setState(() {});
                     } on Exception {
-                      if (mounted)
+                      if (mounted) {
                         setState(
                           () => _error =
                               'No se pudo eliminar la credencial local.',
                         );
+                      }
                     }
                   },
           ),
@@ -199,11 +266,12 @@ class _GoogleOAuthPageState extends State<_GoogleOAuthPage> {
               }
               return NavigationActionPolicy.ALLOW;
             },
-            onReceivedError: (_, __, ___) {
-              if (mounted)
+            onReceivedError: (_, _, _) {
+              if (mounted) {
                 setState(
                   () => _error = 'No se pudo completar la conexión. Tu sesión anterior se conserva.',
                 );
+              }
             },
           ),
         ),

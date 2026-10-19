@@ -32,14 +32,14 @@ String _decodeResponseBody(List<int> bodyBytes) {
   return utf8.decode(bodyBytes);
 }
 
-class TorboxAPI {
+class TorboxAPI extends ChangeNotifier {
   final SecureStorageService secureStorageService;
   TorboxCacheHttpClient? client;
   LibraryPageState? downloadsPageState;
 
-  static const api_base = 'https://api.torbox.app';
-  static const search_api_base = 'https://search-api.torbox.app';
-  static const api_version = 'v1';
+  static const apiBase = 'https://api.torbox.app';
+  static const searchApiBase = 'https://search-api.torbox.app';
+  static const apiVersion = 'v1';
 
   /// The new-API facade. Kept in sync with [apiKey] by [_syncApi] so that
   /// individual calls never have to build or look one up.
@@ -56,14 +56,16 @@ class TorboxAPI {
         Settings.getValue<String>(Constants.googleDriveTokenExpiry),
   );
   GoogleDriveSession? googleSession;
+  String? googleSessionError;
   bool _changingCredential = false;
+  int sessionVersion = 0;
   torbox.TorboxApi? get authenticatedApi => _api;
 
   TorboxAPI({
     required this.secureStorageService,
     this.client,
     this.apiFactory,
-    this.baseUrl = '$api_base/$api_version',
+    this.baseUrl = '$apiBase/$apiVersion',
     this.apiKey,
   }) {
     _syncApi();
@@ -349,13 +351,20 @@ class TorboxAPI {
           detail: 'TorBox no ha aceptado la nueva API key. Se conserva la anterior.',
         );
       }
+      // Prepare account-local state before replacing the stored credential.
+      // A cache/storage failure must never report that the old key survived
+      // after silently replacing it.
+      await downloadsPageState?.resetForAccountChange(resume: false);
+      await deleteTorboxCache();
       await secureStorageService.write('api_key', candidate);
       apiKey = candidate;
       _syncApi();
-      await deleteTorboxCache();
-      await downloadsPageState?.resetForAccountChange();
+      downloadsPageState?.resumeAfterAccountChange();
+      sessionVersion++;
+      notifyListeners();
       return TorboxAPIResponse(success: true, detail: 'API key verificada.');
     } on Exception {
+      downloadsPageState?.resumeAfterAccountChange();
       return TorboxAPIResponse(
         success: false,
         error: 'CREDENTIAL_CHECK_FAILED',
@@ -377,8 +386,13 @@ class TorboxAPI {
     await secureStorageService.delete('api_key');
     apiKey = null;
     _syncApi();
-    await deleteTorboxCache();
-    await downloadsPageState?.resetForAccountChange();
+    try {
+      await deleteTorboxCache();
+      await downloadsPageState?.resetForAccountChange(resume: false);
+    } finally {
+      sessionVersion++;
+      notifyListeners();
+    }
   }
 
   Future<void> saveGoogleToken(String token, String expiry) async {
@@ -395,7 +409,17 @@ class TorboxAPI {
   }
 
   Future<String?> getGoogleToken() async {
-    googleSession = await googleSessions.restore();
+    try {
+      googleSession = await googleSessions.restore();
+      googleSessionError = null;
+    } on FormatException {
+      googleSessionError = 'No se pudo restaurar la sesión de Google. La credencial de TorBox se conserva.';
+      googleSession = null;
+    } on TypeError {
+      googleSessionError =
+          'La sesión local de Google tiene un formato no válido.';
+      googleSession = null;
+    }
     googleToken = googleSession?.isExpired(DateTime.now()) == true
         ? null
         : googleSession?.accessToken;
@@ -1069,7 +1093,7 @@ class TorboxAPI {
     return _makeRequest(
       'meta/${idType.name}:$id',
       method: 'get',
-      baseUrl: search_api_base,
+      baseUrl: searchApiBase,
     );
   }
 
@@ -1080,7 +1104,7 @@ class TorboxAPI {
     return _makeRequest(
       'search/$query',
       method: 'get',
-      baseUrl: search_api_base,
+      baseUrl: searchApiBase,
       body: {'type': type?.name},
     );
   }
@@ -1098,7 +1122,7 @@ class TorboxAPI {
     return _makeRequest(
       'torrents/${idType.name}:$id',
       method: 'get',
-      baseUrl: search_api_base,
+      baseUrl: searchApiBase,
       body: {
         'metadata': metadata,
         'season': season,
@@ -1120,7 +1144,7 @@ class TorboxAPI {
     return _makeRequest(
       'torrents/search/$query',
       method: 'get',
-      baseUrl: search_api_base,
+      baseUrl: searchApiBase,
       body: {
         'metadata': metadata,
         'check_cache': checkCache,
@@ -1143,7 +1167,7 @@ class TorboxAPI {
     return _makeRequest(
       'usenet/${idType.name}:$id',
       method: 'get',
-      baseUrl: search_api_base,
+      baseUrl: searchApiBase,
       body: {
         'metadata': metadata,
         'season': season,
@@ -1167,7 +1191,7 @@ class TorboxAPI {
     return _makeRequest(
       'usenet/search/$query',
       method: 'get',
-      baseUrl: search_api_base,
+      baseUrl: searchApiBase,
       body: {
         'metadata': metadata,
         'season': season,

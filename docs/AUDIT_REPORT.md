@@ -67,3 +67,30 @@ Resultados ejecutados y estados finales se mantienen en TEST_REPORT.md y en la s
 Tras guardar el informe inicial se habilitó acceso: OpenAPI oficial consultado (87 rutas) y colección Postman oficial desde api-docs.torbox.app. Se conserva un extracto y SHA-256 en TORBOX_API_CONTRACT.json. Límite general documentado: 300/min por token; crear torrents no cacheados: 60/h. Los listados usan por defecto limit=1000: se implementará paginación explícita. El progreso de jobs está en rango 0–1, no 0–100. RSS requiere plan Pro y scan_interval se expresa en minutos. /integration/oauth/me y /oauth/{provider}/unregister existen; no se encontró contrato público de renovación local de Google. La verificación HTTP pública no demuestra autenticación ni ejecución en una cuenta.
 
 Baseline ejecutado: 1.277 pruebas del parser y 64 de torbox_api pasan. El primer análisis falló por directorio HOME de solo lectura; se corrigió mediante ANALYZER_STATE_LOCATION_OVERRIDE, sin cambiar HOME. Segundo análisis: 90 diagnósticos heredados (sin errores de compilación, dos warnings). GitHub API ya responde y confirma acceso push/admin; se comprobará la operación de publicación al terminar.
+
+## Resolución y evidencia al entregar
+
+| Hallazgo | Estado | Evidencia / límite |
+|---|---|---|
+| A01 | Corregido | google_drive_session_test: registro seguro atómico, migración, restauración y borrado. Android físico pendiente. |
+| A02–03 | Corregido dentro del contrato disponible | Callback HTTPS exacto, expiración, actualización al reanudar, campo protegido y sin copia de OAuth. No se inventa refresh. |
+| A04–05 | Corregido | credentials_test: la anterior se conserva, solo GET de validación, sin referido automático. |
+| A06–07 | Corregido | Scheduler compartido, intervalos explícitos, sin streams por ID numérico, backoff y cancelación. |
+| A08 | Corregido | library_cache_test: migración v2→v3 con datos existentes; tres tipos con el mismo ID, upsert/borrado/persistencia. |
+| A09–11 | Corregido | Snapshot compartido, paginación, descubrimiento, IndexedStack y widget lista/explorador sincronizados. |
+| A12–13 | Corregido | Jobs con un solo poller, guards de mounted, sin late final reasignado; lifecycle probado en scheduler y controlador. |
+| A14 | Corregido | Selección por identidad, eliminación local solo de éxitos, exclusión de acciones simultáneas y errores parciales visibles. |
+| A15–16 | Corregido para el flujo actual | API tipada usa Dio directamente y la caché de biblioteca es explícita. Adaptador legado valida HTTP y excluye lecturas volátiles. |
+| A17 | Corregido | retry_safety_test: POST no se repite; GET limitado; cancelación de sesión y Retry-After soportado. |
+| A18 | Mitigado | Trabajo con nombre ausente aceptado; errores de conversión del adaptador se muestran de forma segura. Variaciones no documentadas requieren más fixtures reales. |
+| A19 | Corregido | Un MaterialApp, tema M3 e Inter; fallback de modo desconocido probado. |
+| A20–22 | Implementado, compilación de Actions por comprobar en TEST_REPORT | Firma debug independiente; workflow validación/APK; release y release-please solo manuales. Ninguna release publicada por esta tarea. |
+| A23 | Corregido | Directorio temporal SQLite existente; pruebas de apertura, migración y reapertura. Android físico pendiente. |
+| A24–25 | Corregido en el flujo nuevo | Intents requieren envío explícito; formulario común con dispose, campo protegido y estado ocupado. |
+| A26 | Corregido en el flujo nuevo | Persistencia esperada/transaccional, errores sin dumps ni URLs firmadas; suscripción del reproductor liberada. |
+| A27 | Completado | Revisión de imports antes de retirar el catálogo y formularios sustituidos. Reproductor y administración preservados. |
+| A28 | Implementado parcialmente | Dashboard, notificaciones, RSS, ajustes y registros de cuenta. Alcance y proveedores pendientes en KNOWN_LIMITATIONS. |
+| A29 | Mitigado | Revisiones Git fijadas a los commits existentes descargables. No se introduce upgrade mayor de Flutter ni de plugins sin necesidad. |
+| A30 | Revisado con alcance explícito | Tres stores sin imports retirados. Pub: 203 versiones, seis advisories, ninguno afecta al lock actual. No equivale a certificar AAR/NDK/Git. |
+
+El extracto oficial, la revisión de dependencias y los tests se conservan en el repositorio. El estado exacto de análisis, suites, GitHub Actions y artifacts se registra en TEST_REPORT.md; las pruebas de cuenta/dispositivo reales no se presentan como aprobadas.

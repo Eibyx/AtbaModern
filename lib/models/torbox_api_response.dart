@@ -1,4 +1,3 @@
-
 import 'package:atba/utils.dart';
 
 class TorboxAPIResponse {
@@ -42,7 +41,7 @@ class SearchResult {
   final List<String>? categories;
   final int files;
   final SearchTabType searchResultType;
-  final String? nzbLink; 
+  final String? nzbLink;
   final String age; // XXd
   final bool userSearch; // whether it is returned by byoi
 
@@ -76,16 +75,17 @@ class SearchResult {
       torrentLink: json['torrent'],
       lastKnownSeeders: json['last_known_seeders'],
       lastKnownPeers: json['last_known_peers'],
-      size: int.parse(json['size'] .toString()),
+      size: int.parse(json['size'].toString()),
       cached: json['cached'],
       tracker: json['tracker'],
       categories: json['categories'].cast<String>(),
-      files: int.parse(json["files"] .toString()),
-      searchResultType: SearchTabTypeExtension.fromString(json['type']) ?? SearchTabType.torrent,
+      files: int.parse(json["files"].toString()),
+      searchResultType:
+          SearchTabTypeExtension.fromString(json['type']) ??
+          SearchTabType.torrent,
       nzbLink: json['nzb'],
       age: json['age'],
       userSearch: json['user_search'],
-      
     );
   }
 
@@ -144,6 +144,7 @@ extension SearchTabTypeExtension on SearchTabType {
     }
   }
 }
+
 /*
 0 =
 "id" -> 95996

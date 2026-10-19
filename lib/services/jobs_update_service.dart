@@ -15,8 +15,9 @@ class JobsUpdateService {
     poller = AdaptivePoller(
       poll: () async {
         final response = await _apiService.getJobStatusById(jobId);
-        if (!response.success || response.data == null)
+        if (!response.success || response.data == null) {
           throw StateError('No se pudo consultar el trabajo.');
+        }
         final item = JobQueueStatusResponse.fromJson(response.data);
         if (!controller.isClosed && controller.hasListener) {
           controller.add({'type': 'updated', 'updatedItem': item});
@@ -28,8 +29,9 @@ class JobsUpdateService {
         return !doneStatuses.contains(item.status);
       },
       onError: (_) {
-        if (!controller.isClosed && controller.hasListener)
+        if (!controller.isClosed && controller.hasListener) {
           controller.add({'type': 'retrying'});
+        }
       },
     );
     controller = StreamController(

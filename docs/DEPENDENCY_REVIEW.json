@@ -1,0 +1,50 @@
+{
+  "source": "pub.dev official advisory endpoint and registry metadata",
+  "date": "2026-10-19",
+  "hostedPackages": 203,
+  "advisories": [
+    {
+      "package": "archive",
+      "version": "4.3.0",
+      "id": "GHSA-9v85-q87q-g4vg",
+      "affected": false,
+      "summary": "Path traversal in Archive"
+    },
+    {
+      "package": "archive",
+      "version": "4.3.0",
+      "id": "GHSA-r285-q736-9v95",
+      "affected": false,
+      "summary": "Filename spoofing in archive"
+    },
+    {
+      "package": "dio",
+      "version": "5.11.1",
+      "id": "GHSA-9324-jv53-9cc8",
+      "affected": false,
+      "summary": "dio vulnerable to CRLF injection with HTTP method string"
+    },
+    {
+      "package": "dio",
+      "version": "5.11.1",
+      "id": "GHSA-jwpw-q68h-r678",
+      "affected": false,
+      "summary": "Duplicate Advisory: Improper Neutralization of CRLF Sequences in dio"
+    },
+    {
+      "package": "http",
+      "version": "1.6.0",
+      "id": "GHSA-4rgh-jx4f-qfcq",
+      "affected": false,
+      "summary": "http before 0.13.3 vulnerable to header injection"
+    },
+    {
+      "package": "shared_preferences_android",
+      "version": "2.4.28",
+      "id": "GHSA-3hpf-ff72-j67p",
+      "affected": false,
+      "summary": "shared_preferences_android vulnerability"
+    }
+  ],
+  "matches": []
+}
